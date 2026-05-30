@@ -1,0 +1,15 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - avoid_unnecessary_containers
+    - prefer_single_quotes
+    - sort_child_properties_last
+    - use_build_context_synchronously
+    - unnecessary_string_interpolations
+    - prefer_final_locals
+    - avoid_print
+    - require_trailing_commas
