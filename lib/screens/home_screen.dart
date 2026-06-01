@@ -15,6 +15,7 @@ import '../services/subscription_service.dart';
 import '../services/ad_service.dart';
 import '../services/analytics_service.dart';
 import '../services/feature_gate.dart';
+import '../theme/app_colors.dart';
 import '../widgets/subscription_status_card.dart';
 import '../widgets/feature_lock.dart';
 import '../widgets/premium_badge.dart';
@@ -117,127 +118,224 @@ class _HomeTab extends StatelessWidget {
     return SafeArea(
       child: CustomScrollView(
         slivers: [
-          // ── Greeting header with Premium badge ──
+          // ── Greeting header (avatar + name + notification bell) ──
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Row(
                 children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: profile?.avatarPath != null
+                        ? ClipOval(
+                            child: Image.asset(profile!.avatarPath!,
+                                fit: BoxFit.cover, width: 44, height: 44),
+                          )
+                        : Icon(Icons.person, color: theme.colorScheme.primary),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          '${_greeting()},',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
                         Row(
                           children: [
                             Flexible(
                               child: Text(
-                                '${_greeting()}, $name!',
-                                style: theme.textTheme.headlineSmall?.copyWith(
+                                name,
+                                style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            // Premium Member badge in header.
                             if (subService.isPremium) ...[
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               PremiumBadge(
                                 tier: subService.currentTier,
-                                size: 18,
-                                showLabel: true,
+                                size: 16,
+                                showLabel: false,
                               ),
                             ],
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Shnu bghiti dir lyoum?',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: theme.colorScheme.primaryContainer,
-                    child: profile?.avatarPath != null
-                        ? ClipOval(
-                            child: Image.asset(profile!.avatarPath!,
-                                fit: BoxFit.cover, width: 52, height: 52),
-                          )
-                        : Icon(Icons.person, color: theme.colorScheme.primary),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.notifications_none_rounded),
+                      color: theme.colorScheme.primary,
+                      onPressed: () {
+                        final homeState =
+                            context.findAncestorStateOfType<_HomeScreenState>();
+                        homeState?.setState(() => homeState._currentIndex = 1);
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
           ),
 
-          // ── Quick action cards ──
+          // ── Big "how can I help" headline ──
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Text(
+                'Kifash\nn3awnek lyoum?',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ),
+
+          // ── Hero action grid: big "Talk to AI" + stacked Voice/Image ──
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: SizedBox(
+                height: 188,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Big primary card with a "Start talking" pill button.
+                    Expanded(
+                      child: _HeroActionCard(
+                        icon: Icons.auto_awesome_rounded,
+                        title: 'Hder m3a\nDostok',
+                        subtitle: 'Jarrb daba',
+                        actionLabel: 'Bda hadra',
+                        onTap: () => Navigator.pushNamed(context, '/chat'),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Stacked secondary cards.
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: FeatureLock(
+                              feature: FeatureGate.voiceCalls,
+                              tier: subService.currentTier,
+                              teaser: true,
+                              child: _MiniActionCard(
+                                icon: Icons.graphic_eq_rounded,
+                                label: 'Voice',
+                                subtitle: 'Hder b-sotek',
+                                color: const Color(0xFF9D4EDD),
+                                onTap: () =>
+                                    Navigator.pushNamed(context, '/call'),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Expanded(
+                            child: _MiniActionCard(
+                              icon: Icons.image_rounded,
+                              label: 'Image',
+                              subtitle: 'Sawb tsawer',
+                              color: const Color(0xFFC77DFF),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Sma7li, ghadi njik f update jay!')),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Topics row (label + See All) ──
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text(
-                'Shnu bghiti?',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                children: [
+                  Text(
+                    'Mawdu3at',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      final homeState =
+                          context.findAncestorStateOfType<_HomeScreenState>();
+                      homeState?.setState(() => homeState._currentIndex = 1);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text('Kollshi'),
+                  ),
+                ],
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 130,
+              height: 42,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
-                  _QuickActionCard(
-                    icon: Icons.chat_bubble_rounded,
-                    label: 'Hder m3aya',
-                    subtitle: 'Bdarija daba',
-                    color: const Color(0xFF6750A4),
-                    onTap: () => Navigator.pushNamed(context, '/chat'),
-                  ),
-                  _QuickActionCard(
-                    icon: Icons.lightbulb_rounded,
-                    label: 'Shnu lyoum?',
-                    subtitle: 'Fikra lyoumia',
-                    color: const Color(0xFF006B5E),
-                    onTap: () {
-                      // Switch to the Daily tab.
-                      final homeState =
-                          context.findAncestorStateOfType<_HomeScreenState>();
-                      homeState?.setState(() => homeState._currentIndex = 1);
-                    },
-                  ),
-                  // Call button locked behind premium with FeatureLock.
-                  FeatureLock(
-                    feature: FeatureGate.voiceCalls,
-                    tier: subService.currentTier,
-                    teaser: true,
-                    child: _QuickActionCard(
-                      icon: Icons.phone_rounded,
-                      label: 'Call Dostok',
-                      subtitle: 'Hder b-sotek',
-                      color: const Color(0xFF00897B),
-                      onTap: () => Navigator.pushNamed(context, '/call'),
+                  for (var i = 0; i < _kHomeTopics.length; i++)
+                    _TopicChip(
+                      label: _kHomeTopics[i],
+                      selected: i == 0,
+                      onTap: () => Navigator.pushNamed(context, '/chat'),
                     ),
-                  ),
-                  _QuickActionCard(
-                    icon: Icons.help_rounded,
-                    label: '3awnni',
-                    subtitle: 'M3aloma jdida',
-                    color: const Color(0xFFB3261E),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                'Sma7li, ghadi njik f update jay!')),
-                      );
-                    },
-                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Suggestion cards (prompt starters with Discover) ──
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 150,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                children: [
+                  for (final s in _kHomeSuggestions)
+                    _SuggestionCard(
+                      question: s,
+                      onTap: () => Navigator.pushNamed(context, '/chat'),
+                    ),
                 ],
               ),
             ),
@@ -507,17 +605,136 @@ class _AdBannerWidgetState extends State<_AdBannerWidget> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick Action Card
+// Home content data (topics + suggestion starters)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _QuickActionCard extends StatelessWidget {
+const List<String> _kHomeTopics = [
+  'L7yat',
+  'Khdma',
+  'S77a',
+  'T3lim',
+  'Riyada',
+  'Tbukh',
+];
+
+const List<String> _kHomeSuggestions = [
+  'Shnu n9der ndir lyoum?',
+  'Aatini fikra mzyana',
+  '3awnni nfham had l7aja',
+  'Gulli chi nokta',
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hero Action Card (big primary card with a "start" pill button)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _HeroActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String actionLabel;
+  final VoidCallback? onTap;
+
+  const _HeroActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.actionLabel,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: AppColors.gradientPrimary,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.32),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.22),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+              const Spacer(),
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withOpacity(0.85),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      actionLabel,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_forward_rounded,
+                        size: 16, color: AppColors.primary),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mini Action Card (compact tinted card)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MiniActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String subtitle;
   final Color color;
   final VoidCallback? onTap;
 
-  const _QuickActionCard({
+  const _MiniActionCard({
     required this.icon,
     required this.label,
     required this.subtitle,
@@ -527,41 +744,190 @@ class _QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: SizedBox(
-        width: 140,
-        child: Card(
-          elevation: 0,
-          color: color.withOpacity(0.1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(22),
           ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: color.withOpacity(0.75),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Topic Chip
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TopicChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  const _TopicChip({
+    required this.label,
+    required this.selected,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(30),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+            decoration: BoxDecoration(
+              color: selected
+                  ? AppColors.primary
+                  : theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: selected
+                    ? AppColors.primary
+                    : theme.colorScheme.outline.withOpacity(0.18),
+              ),
+            ),
+            child: Text(
+              label,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: selected
+                    ? Colors.white
+                    : theme.colorScheme.onSurface.withOpacity(0.75),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Suggestion Card (prompt starter with a Discover action)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SuggestionCard extends StatelessWidget {
+  final String question;
+  final VoidCallback? onTap;
+
+  const _SuggestionCard({required this.question, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(right: 14),
+      child: SizedBox(
+        width: 180,
+        child: Material(
+          color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(22),
             onTap: onTap,
-            child: Padding(
+            child: Container(
               padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withOpacity(0.12),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.06),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(icon, color: color, size: 28),
-                  const Spacer(),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                      fontSize: 14,
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.auto_awesome_rounded,
+                        size: 16, color: AppColors.primary),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: Text(
+                      question,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: color.withOpacity(0.7),
-                      fontSize: 11,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Jarrb',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.arrow_forward_rounded,
+                          size: 14, color: AppColors.primary),
+                    ],
                   ),
                 ],
               ),
