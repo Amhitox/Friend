@@ -41,11 +41,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _totalPages = 4;
 
   // Brand colors
-  static const _teal = Color(0xFF00897B);
-  static const _tealDark = Color(0xFF00695C);
-  static const _tealLight = Color(0xFFB2DFDB);
-  static const _amber = Color(0xFFFFB300);
-  static const _warmBg = Color(0xFFF5F5F0);
+  static const _teal = Color(0xFF7C6BF5);
+  static const _tealDark = Color(0xFF5B4BD6);
+  static const _tealLight = Color(0xFFCFC6FF);
+  static const _amber = Color(0xFFC77DFF);
+  static const _warmBg = Color(0xFFF7F5FF);
 
   @override
   void initState() {
@@ -222,8 +222,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Icons.favorite_rounded,
           ],
           colors: const [
-            Color(0xFFFFB300),
-            Color(0xFF00897B),
+            Color(0xFFC77DFF),
+            Color(0xFF7C6BF5),
             Color(0xFFEF5350),
           ],
         ),
@@ -286,9 +286,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Icons.language_rounded,
           ],
           colors: const [
-            Color(0xFF00897B),
-            Color(0xFF26A69A),
-            Color(0xFF4DB6AC),
+            Color(0xFF7C6BF5),
+            Color(0xFFB388FF),
+            Color(0xFFCFC6FF),
           ],
         ),
         const Gap(40),
@@ -351,8 +351,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Icons.lightbulb_rounded,
           ],
           colors: const [
-            Color(0xFFFFB300),
-            Color(0xFF00897B),
+            Color(0xFFC77DFF),
+            Color(0xFF7C6BF5),
             Color(0xFF42A5F5),
           ],
         ),

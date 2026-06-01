@@ -61,7 +61,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   // ---------------------------------------------------------------------------
 
   static const _goldLight = Color(0xFFFFD54F);
-  static const _goldDark = Color(0xFFFFB300);
+  static const _goldDark = Color(0xFFC77DFF);
   static const _purpleLight = Color(0xFFB388FF);
   static const _purpleDark = Color(0xFF7C4DFF);
 
@@ -349,7 +349,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [_goldLight, _goldDark, Color(0xFFFF8F00)],
+          colors: [_goldLight, _goldDark, Color(0xFF9D4EDD)],
         ),
         boxShadow: [
           BoxShadow(

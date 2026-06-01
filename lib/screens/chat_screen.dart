@@ -396,7 +396,7 @@ class _ChatScreenState extends State<ChatScreen>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF00897B)),
+      leading: Icon(icon, color: const Color(0xFF7C6BF5)),
       title: Text(
         label,
         style: GoogleFonts.cairo(fontSize: 16),
@@ -458,7 +458,7 @@ class _ChatScreenState extends State<ChatScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.chat_bubble_rounded,
-                  size: 48, color: Color(0xFF00897B)),
+                  size: 48, color: Color(0xFF7C6BF5)),
               const Gap(12),
               Text(
                 'Dostok',
@@ -536,14 +536,14 @@ class _ChatScreenState extends State<ChatScreen>
 
   PreferredSizeWidget _buildAppBar(bool isDark) {
     return AppBar(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFF00897B),
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFF7C6BF5),
       elevation: 1,
       shadowColor: Colors.black.withOpacity(0.15),
       leadingWidth: 56,
       leading: Padding(
         padding: const EdgeInsets.only(left: 8),
         child: AvatarGlow(
-          glowColor: const Color(0xFFFFB300),
+          glowColor: const Color(0xFFC77DFF),
           endRadius: 40.0,
           animate: true,
           child: CircleAvatar(
@@ -551,7 +551,7 @@ class _ChatScreenState extends State<ChatScreen>
             backgroundColor: isDark ? Colors.white12 : Colors.white24,
             child: Icon(
               Icons.smart_toy_rounded,
-              color: isDark ? const Color(0xFFFFB300) : Colors.white,
+              color: isDark ? const Color(0xFFC77DFF) : Colors.white,
               size: 22,
             ),
           ),
@@ -720,7 +720,7 @@ class _ChatScreenState extends State<ChatScreen>
             bottom: 8,
             child: FloatingActionButton.small(
               backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
-              foregroundColor: const Color(0xFF00897B),
+              foregroundColor: const Color(0xFF7C6BF5),
               elevation: 3,
               onPressed: () => _scrollToBottom(),
               child: const Icon(Icons.keyboard_arrow_down_rounded),
@@ -786,7 +786,7 @@ class _ChatScreenState extends State<ChatScreen>
             Icon(
               Icons.waving_hand_rounded,
               size: 64,
-              color: const Color(0xFFFFB300),
+              color: const Color(0xFFC77DFF),
             ),
             const Gap(16),
             Text(
@@ -828,12 +828,12 @@ class _ChatScreenState extends State<ChatScreen>
       label: Text(
         text,
         style: GoogleFonts.cairo(
-          color: const Color(0xFF00897B),
+          color: const Color(0xFF7C6BF5),
           fontWeight: FontWeight.w600,
         ),
       ),
-      backgroundColor: const Color(0xFF00897B).withOpacity(0.1),
-      side: BorderSide(color: const Color(0xFF00897B).withOpacity(0.3)),
+      backgroundColor: const Color(0xFF7C6BF5).withOpacity(0.1),
+      side: BorderSide(color: const Color(0xFF7C6BF5).withOpacity(0.3)),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       onPressed: () {
         _textController.text = text;
@@ -873,7 +873,7 @@ class _ChatScreenState extends State<ChatScreen>
               icon: const Icon(Icons.refresh_rounded),
               label: Text('Jerrab mrra khra', style: GoogleFonts.cairo()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00897B),
+                backgroundColor: const Color(0xFF7C6BF5),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -935,7 +935,7 @@ class _ChatScreenState extends State<ChatScreen>
 
   Widget _buildInputArea(bool isDark) {
     final bgColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
-    final inputBg = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F0);
+    final inputBg = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF7F5FF);
     final borderColor = isDark ? Colors.white12 : Colors.black12;
 
     return Container(
@@ -1069,7 +1069,7 @@ class _ChatScreenState extends State<ChatScreen>
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: _hasText
-              ? const Color(0xFF00897B)
+              ? const Color(0xFF7C6BF5)
               : (isDark ? Colors.white12 : Colors.grey.shade200),
           shape: BoxShape.circle,
         ),

@@ -328,7 +328,7 @@ class _UpgradePromptSheetState extends State<UpgradePromptSheet>
           color: const Color(0xFF16213E),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFFFD700).withOpacity(0.3),
+            color: const Color(0xFFE0C3FC).withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -339,7 +339,7 @@ class _UpgradePromptSheetState extends State<UpgradePromptSheet>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFD700).withOpacity(0.15),
+                color: const Color(0xFFE0C3FC).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Center(
@@ -376,7 +376,7 @@ class _UpgradePromptSheetState extends State<UpgradePromptSheet>
             // Arrow
             Icon(
               Icons.play_circle_fill_rounded,
-              color: const Color(0xFFFFD700),
+              color: const Color(0xFFE0C3FC),
               size: 32,
             ),
           ],
@@ -433,8 +433,8 @@ class _UpgradePromptSheetState extends State<UpgradePromptSheet>
               widget.onUpgradeVIP?.call();
             },
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFFFD700),
-              side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+              foregroundColor: const Color(0xFFE0C3FC),
+              side: const BorderSide(color: Color(0xFFE0C3FC), width: 1.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),

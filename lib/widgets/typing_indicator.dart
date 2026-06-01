@@ -142,7 +142,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                           decoration: BoxDecoration(
                             color: isDark
                                 ? Colors.white.withOpacity(0.5)
-                                : const Color(0xFF00897B).withOpacity(0.6),
+                                : const Color(0xFF7C6BF5).withOpacity(0.6),
                             shape: BoxShape.circle,
                           ),
                         ),

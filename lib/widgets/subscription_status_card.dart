@@ -92,8 +92,8 @@ class SubscriptionStatusCard extends StatelessWidget {
       case DostokTier.vip:
         return [
           const Color(0xFFB8860B),
-          const Color(0xFFFFD700),
-          const Color(0xFFFFE082),
+          const Color(0xFFE0C3FC),
+          const Color(0xFFE0C3FC),
         ];
     }
   }
@@ -105,7 +105,7 @@ class SubscriptionStatusCard extends StatelessWidget {
       case DostokTier.premium:
         return const Color(0xFF6C63FF);
       case DostokTier.vip:
-        return const Color(0xFFFFD700);
+        return const Color(0xFFE0C3FC);
     }
   }
 

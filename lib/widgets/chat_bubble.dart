@@ -54,7 +54,7 @@ class ChatBubble extends StatelessWidget {
 
     // -- Colours ---------------------------------------------------------------
     final userBubbleColor =
-        isDark ? const Color(0xFF00695C) : const Color(0xFF00897B);
+        isDark ? const Color(0xFF5B4BD6) : const Color(0xFF7C6BF5);
     final aiBubbleColor =
         isDark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF);
     final userTextColor = Colors.white;
@@ -63,7 +63,7 @@ class ChatBubble extends StatelessWidget {
     final timestampColor =
         isUser ? Colors.white60 : (isDark ? Colors.white38 : Colors.black38);
     final tailColor = isUser
-        ? (isDark ? const Color(0xFF005C4F) : const Color(0xFF00796B))
+        ? (isDark ? const Color(0xFF4B3FA8) : const Color(0xFF6B5AE0))
         : (isDark ? const Color(0xFF171717) : const Color(0xFFEEEEEE));
 
     final bubbleColor = isUser ? userBubbleColor : aiBubbleColor;
@@ -122,7 +122,7 @@ class ChatBubble extends StatelessWidget {
                           size: 16,
                           color: isUser
                               ? Colors.white70
-                              : const Color(0xFF00897B),
+                              : const Color(0xFF7C6BF5),
                         ),
                         const SizedBox(width: 6),
                         Flexible(

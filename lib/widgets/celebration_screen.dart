@@ -179,7 +179,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
 
   static const _confettiColors = [
     Color(0xFF6C63FF),
-    Color(0xFFFFD700),
+    Color(0xFFE0C3FC),
     Color(0xFF00BFA6),
     Color(0xFFFF6B6B),
     Color(0xFFFFA726),
@@ -279,7 +279,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                               'Mabrouk! 🎉',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                color: Color(0xFFFFD700),
+                                color: Color(0xFFE0C3FC),
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -353,20 +353,20 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
         gradient: SweepGradient(
           colors: [
             widget.tier == SubscribedTier.vip
-                ? const Color(0xFFFFD700)
+                ? const Color(0xFFE0C3FC)
                 : const Color(0xFF6C63FF),
             widget.tier == SubscribedTier.vip
-                ? const Color(0xFFFFA000)
+                ? const Color(0xFF9D4EDD)
                 : const Color(0xFF8B83FF),
             widget.tier == SubscribedTier.vip
-                ? const Color(0xFFFFD700)
+                ? const Color(0xFFE0C3FC)
                 : const Color(0xFF6C63FF),
           ],
         ),
         boxShadow: [
           BoxShadow(
             color: (widget.tier == SubscribedTier.vip
-                    ? const Color(0xFFFFD700)
+                    ? const Color(0xFFE0C3FC)
                     : const Color(0xFF6C63FF))
                 .withOpacity(0.4),
             blurRadius: 30,

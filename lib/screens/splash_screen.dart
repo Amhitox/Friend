@@ -70,9 +70,9 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF00695C), // deep teal
-              Color(0xFF00897B), // teal
-              Color(0xFF26A69A), // lighter teal
+              Color(0xFF5B4BD6), // deep teal
+              Color(0xFF7C6BF5), // teal
+              Color(0xFFB388FF), // lighter teal
             ],
             stops: [0.0, 0.5, 1.0],
           ),
@@ -101,14 +101,14 @@ class _SplashScreenState extends State<SplashScreen>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFFB2DFDB),
-                        Color(0xFF4DB6AC),
-                        Color(0xFF00897B),
+                        Color(0xFFCFC6FF),
+                        Color(0xFFCFC6FF),
+                        Color(0xFF7C6BF5),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00695C).withOpacity(0.4),
+                        color: const Color(0xFF5B4BD6).withOpacity(0.4),
                         blurRadius: 30,
                         spreadRadius: 4,
                         offset: const Offset(0, 8),

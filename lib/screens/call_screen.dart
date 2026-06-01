@@ -296,8 +296,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF00695C), // teal[800]
-                  Color(0xFF004D40), // teal[900]
+                  Color(0xFF5B4BD6), // teal[800]
+                  Color(0xFF4B3FA8), // teal[900]
                   Color(0xFF1A1A2E), // dark navy
                 ],
                 stops: [0.0, 0.5, 1.0],
@@ -366,7 +366,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 style: GoogleFonts.cairo(),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00897B),
+                backgroundColor: const Color(0xFF7C6BF5),
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -641,10 +641,10 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withOpacity(0.1),
+                  color: const Color(0xFFE0C3FC).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFFFFD700).withOpacity(0.3),
+                    color: const Color(0xFFE0C3FC).withOpacity(0.3),
                   ),
                 ),
                 child: Row(
@@ -657,7 +657,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                         'Moqatelat dyalek salaw l-youm. Upgrade l-Premium bach tzid!',
                         style: GoogleFonts.cairo(
                           fontSize: 13,
-                          color: const Color(0xFFFFD700),
+                          color: const Color(0xFFE0C3FC),
                           fontWeight: FontWeight.w600,
                         ),
                         textAlign: TextAlign.center,
@@ -698,7 +698,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                   icon: Icons.call_rounded,
                   label: 'Call Again',
                   backgroundColor: subService.canMakeCall()
-                      ? const Color(0xFF00897B)
+                      ? const Color(0xFF7C6BF5)
                       : Colors.grey.shade700,
                   onPressed: () {
                     if (subService.canMakeCall()) {
@@ -763,7 +763,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     if (call.currentState == CallState.active ||
         call.currentState == CallState.connecting) {
       return AvatarGlow(
-        glowColor: const Color(0xFF00897B),
+        glowColor: const Color(0xFF7C6BF5),
         endRadius: 75.0,
         animate: true,
         child: avatarWidget,

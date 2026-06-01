@@ -218,7 +218,7 @@ class _RewardedAdPromptState extends State<RewardedAdPrompt>
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color(0xFFFFD700).withOpacity(0.2),
+          color: const Color(0xFFE0C3FC).withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -229,7 +229,7 @@ class _RewardedAdPromptState extends State<RewardedAdPrompt>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFD700).withOpacity(0.12),
+              color: const Color(0xFFE0C3FC).withOpacity(0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Center(
@@ -275,12 +275,12 @@ class _RewardedAdPromptState extends State<RewardedAdPrompt>
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
+                    colors: [Color(0xFFE0C3FC), Color(0xFF9D4EDD)],
                   ),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withOpacity(0.3),
+                      color: const Color(0xFFE0C3FC).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -319,7 +319,7 @@ class _RewardedAdPromptState extends State<RewardedAdPrompt>
             height: 22,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              color: Color(0xFFFFD700),
+              color: Color(0xFFE0C3FC),
             ),
           ),
           const SizedBox(width: 14),

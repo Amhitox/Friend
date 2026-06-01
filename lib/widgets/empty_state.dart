@@ -82,7 +82,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final effectiveAccent = accentColor ?? const Color(0xFF00897B);
+    final effectiveAccent = accentColor ?? const Color(0xFF7C6BF5);
 
     final effectiveTitle = title ?? 'والو هنا';
     final effectiveMessage = message ?? '';

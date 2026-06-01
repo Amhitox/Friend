@@ -27,7 +27,7 @@ class LoadingWidget extends StatefulWidget {
   final List<String>? messages;
 
   /// The accent color for the spinner and text. Defaults to the app's
-  /// primary teal (`Color(0xFF00897B)`).
+  /// primary teal (`Color(0xFF7C6BF5)`).
   final Color? color;
 
   /// Duration each message stays visible before transitioning.
@@ -81,7 +81,7 @@ class _LoadingWidgetState extends State<LoadingWidget>
     super.initState();
 
     _messages = widget.messages ?? _defaultMessages;
-    _color = widget.color ?? const Color(0xFF00897B);
+    _color = widget.color ?? const Color(0xFF7C6BF5);
 
     _fadeController = AnimationController(
       vsync: this,
@@ -189,7 +189,7 @@ class InlineLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? const Color(0xFF00897B);
+    final effectiveColor = color ?? const Color(0xFF7C6BF5);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Row(

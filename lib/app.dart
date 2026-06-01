@@ -30,9 +30,9 @@ class _DostokAppState extends State<DostokApp> {
   // -----------------------------------------------------------------------
   // Brand colours
   // -----------------------------------------------------------------------
-  static const Color _primaryTeal = Color(0xFF00897B);
-  static const Color _primaryDark = Color(0xFF00695C);
-  static const Color _accentAmber = Color(0xFFFFB300);
+  static const Color _primaryTeal = Color(0xFF7C6BF5);
+  static const Color _primaryDark = Color(0xFF5B4BD6);
+  static const Color _accentAmber = Color(0xFFC77DFF);
 
   // VIP-exclusive deep gold accent.
   static const Color _vipGold = Color(0xFFD4A017);
@@ -105,7 +105,7 @@ class _DostokAppState extends State<DostokApp> {
           secondary: _accentAmber,
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF5F5F0),
+        scaffoldBackgroundColor: const Color(0xFFF7F5FF),
         textTheme: GoogleFonts.cairoTextTheme(),
         appBarTheme: AppBarTheme(
           backgroundColor: activeSeed,

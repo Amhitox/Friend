@@ -63,7 +63,7 @@ class AppErrorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final accentColor = color ?? const Color(0xFF00897B);
+    final accentColor = color ?? const Color(0xFF7C6BF5);
 
     final effectiveIcon = icon ?? Icons.cloud_off_rounded;
     final effectiveTitle = title ?? 'واحد المشكيل!';

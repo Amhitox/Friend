@@ -24,13 +24,13 @@ abstract final class AppTheme {
   // ---------------------------------------------------------------------------
 
   /// Default corner radius for cards and containers.
-  static const double _radiusCard = 16.0;
+  static const double _radiusCard = 22.0;
 
   /// Corner radius for input fields.
-  static const double _radiusInput = 14.0;
+  static const double _radiusInput = 16.0;
 
   /// Corner radius for buttons.
-  static const double _radiusButton = 16.0;
+  static const double _radiusButton = 18.0;
 
   /// Corner radius for chips and small elements.
   static const double _radiusChip = 40.0;

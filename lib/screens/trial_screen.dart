@@ -43,8 +43,8 @@ class _TrialScreenState extends State<TrialScreen> {
   // ---------------------------------------------------------------------------
 
   static const _goldLight = Color(0xFFFFD54F);
-  static const _goldDark = Color(0xFFFFB300);
-  static const _warmBg = Color(0xFFF5F5F0);
+  static const _goldDark = Color(0xFFC77DFF);
+  static const _warmBg = Color(0xFFF7F5FF);
 
   /// Features included in the Premium trial, with icon + Darija label.
   static const _trialFeatures = <({IconData icon, String label, String desc})>[
@@ -412,7 +412,7 @@ class _TrialScreenState extends State<TrialScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [_goldLight, _goldDark, Color(0xFFFF8F00)],
+          colors: [_goldLight, _goldDark, Color(0xFF9D4EDD)],
         ),
         boxShadow: [
           BoxShadow(
@@ -820,7 +820,7 @@ class _TrialPulseButtonState extends State<_TrialPulseButton>
                 ? null
                 : [
                     BoxShadow(
-                      color: const Color(0xFFFFB300).withOpacity(_glowAnimation.value),
+                      color: const Color(0xFFC77DFF).withOpacity(_glowAnimation.value),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -832,10 +832,10 @@ class _TrialPulseButtonState extends State<_TrialPulseButton>
       child: ElevatedButton(
         onPressed: widget.isStarting ? null : widget.onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFB300),
+          backgroundColor: const Color(0xFFC77DFF),
           foregroundColor: Colors.white,
           elevation: 4,
-          shadowColor: const Color(0xFFFFB300).withOpacity(0.4),
+          shadowColor: const Color(0xFFC77DFF).withOpacity(0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
