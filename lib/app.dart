@@ -122,20 +122,38 @@ class _DostokAppState extends State<DostokApp> {
           style: ElevatedButton.styleFrom(
             backgroundColor: activeSeed,
             foregroundColor: Colors.white,
+            elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
           ),
         ),
-        cardTheme: CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: activeSeed, width: 1.5),
+          ),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: isVip ? _vipGold : _accentAmber,
+          backgroundColor: isVip ? _vipGold : activeSeed,
           foregroundColor: Colors.white,
         ),
       ),
@@ -151,12 +169,12 @@ class _DostokAppState extends State<DostokApp> {
           secondary: _accentAmber,
           brightness: Brightness.dark,
         ),
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color(0xFF14121F),
         textTheme: GoogleFonts.cairoTextTheme(
           ThemeData.dark().textTheme,
         ),
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF1E1E1E),
+          backgroundColor: const Color(0xFF1E1B2E),
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
@@ -170,21 +188,23 @@ class _DostokAppState extends State<DostokApp> {
           style: ElevatedButton.styleFrom(
             backgroundColor: activeDarkSeed,
             foregroundColor: Colors.white,
+            elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
           ),
         ),
         cardTheme: CardThemeData(
-          elevation: 2,
+          elevation: 0,
+          color: const Color(0xFF1E1B2E),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(22),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: isVip ? _vipGold : _accentAmber,
-          foregroundColor: Colors.black,
+          backgroundColor: isVip ? _vipGold : activeDarkSeed,
+          foregroundColor: Colors.white,
         ),
       ),
 
