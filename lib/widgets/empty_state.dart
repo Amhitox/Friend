@@ -78,6 +78,55 @@ class EmptyState extends StatelessWidget {
     this.illustrationSize = 96,
   });
 
+  /// Empty state for the messages / chat screen.
+  factory EmptyState.messages({Key? key, VoidCallback? onAction}) {
+    return EmptyState(
+      key: key,
+      icon: Icons.chat_bubble_outline_rounded,
+      title: 'ما زال ما هضرنا!',
+      message: 'بدا هضرة معايا و غادي نكون صاحبك',
+      actionLabel: 'بدا هضرة دابا',
+      onAction: onAction,
+    );
+  }
+
+  /// Empty state for the daily tasks list.
+  factory EmptyState.tasks({Key? key, VoidCallback? onAction}) {
+    return EmptyState(
+      key: key,
+      icon: Icons.task_alt_rounded,
+      title: 'ما زال ما ديرتي شي واجب',
+      message: 'زيد شي واجب باش نعاونك نتتبعو',
+      actionLabel: 'زيد واجب',
+      onAction: onAction,
+    );
+  }
+
+  /// Empty state for search results.
+  factory EmptyState.searchResults({Key? key, VoidCallback? onAction}) {
+    return EmptyState(
+      key: key,
+      icon: Icons.search_off_rounded,
+      title: 'ما لقيت والو',
+      message: 'جرب كلمات أخرى ولا عاود البحث',
+      actionLabel: 'مسح البحث',
+      onAction: onAction,
+      illustrationSize: 80,
+    );
+  }
+
+  /// Empty state for the daily mood / history screen.
+  factory EmptyState.dailyHistory({Key? key, VoidCallback? onAction}) {
+    return EmptyState(
+      key: key,
+      icon: Icons.calendar_today_rounded,
+      title: 'ما زال ما سجلتي شي حاجة',
+      message: 'بدا نهارك معايا و غادي نتتبعو',
+      actionLabel: 'بدا نهارك',
+      onAction: onAction,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -242,64 +291,6 @@ class _LottieIllustration extends StatelessWidget {
       path,
       fit: BoxFit.contain,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-    );
-  }
-}
-
-/// Pre-configured empty states for common Dostok screens.
-///
-/// These factory constructors provide Darija copy tailored to each context
-/// so screens can display a consistent empty state with one line of code.
-///
-/// Usage:
-/// ```dart
-/// EmptyState.messages(onAction: () => startNewChat())
-/// EmptyState.tasks(onAction: () => showAddTaskDialog())
-/// EmptyState.searchResults(onAction: () => clearSearch())
-/// ```
-extension EmptyStatePresets on EmptyState {
-  /// Empty state for the messages / chat screen.
-  static Widget messages({VoidCallback? onAction}) {
-    return EmptyState(
-      icon: Icons.chat_bubble_outline_rounded,
-      title: 'ما زال ما هضرنا!',
-      message: 'بدا هضرة معايا و غادي نكون صاحبك',
-      actionLabel: 'بدا هضرة دابا',
-      onAction: onAction,
-    );
-  }
-
-  /// Empty state for the daily tasks list.
-  static Widget tasks({VoidCallback? onAction}) {
-    return EmptyState(
-      icon: Icons.task_alt_rounded,
-      title: 'ما زال ما ديرتي شي واجب',
-      message: 'زيد شي واجب باش نعاونك نتتبعو',
-      actionLabel: 'زيد واجب',
-      onAction: onAction,
-    );
-  }
-
-  /// Empty state for search results.
-  static Widget searchResults({VoidCallback? onAction}) {
-    return EmptyState(
-      icon: Icons.search_off_rounded,
-      title: 'ما لقيت والو',
-      message: 'جرب كلمات أخرى ولا عاود البحث',
-      actionLabel: 'مسح البحث',
-      onAction: onAction,
-      illustrationSize: 80,
-    );
-  }
-
-  /// Empty state for the daily mood / history screen.
-  static Widget dailyHistory({VoidCallback? onAction}) {
-    return EmptyState(
-      icon: Icons.calendar_today_rounded,
-      title: 'ما زال ما سجلتي شي حاجة',
-      message: 'بدا نهارك معايا و غادي نتتبعو',
-      actionLabel: 'بدا نهارك',
-      onAction: onAction,
     );
   }
 }
