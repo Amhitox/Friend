@@ -741,13 +741,47 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     CallProvider call, {
     Widget? child,
   }) {
-    final avatar = CircleAvatar(
-      radius: _kAvatarRadius,
-      backgroundColor: Colors.white.withOpacity(0.15),
-      child: const Icon(
-        Icons.person_rounded,
-        size: 56,
-        color: Colors.white,
+    // Iridescent "listening" orb — a holographic gradient sphere with a soft
+    // specular highlight, echoing the reference voice-assistant design.
+    final avatar = Container(
+      width: _kAvatarRadius * 2,
+      height: _kAvatarRadius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const RadialGradient(
+          center: Alignment(-0.3, -0.4),
+          radius: 1.1,
+          colors: [
+            Color(0xFFF1E6FF), // bright lavender highlight
+            Color(0xFFC9A9FF), // light orchid
+            Color(0xFF8A6BFF), // vivid purple
+            Color(0xFF5B4BD6), // deep purple
+          ],
+          stops: [0.0, 0.38, 0.72, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7C6BF5).withOpacity(0.55),
+            blurRadius: 48,
+            spreadRadius: 6,
+          ),
+        ],
+      ),
+      child: Align(
+        alignment: const Alignment(-0.4, -0.5),
+        child: Container(
+          width: _kAvatarRadius * 0.55,
+          height: _kAvatarRadius * 0.55,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                Colors.white.withOpacity(0.85),
+                Colors.white.withOpacity(0.0),
+              ],
+            ),
+          ),
+        ),
       ),
     );
 
