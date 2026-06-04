@@ -639,7 +639,7 @@ class _IridescentOrbState extends State<_IridescentOrb>
 
     _rotateController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 6),
     )..repeat();
 
     _pulseController = AnimationController(
@@ -657,8 +657,8 @@ class _IridescentOrbState extends State<_IridescentOrb>
 
   @override
   Widget build(BuildContext context) {
-    final pulseMin = widget.isActive ? 1.0 : 0.96;
-    final pulseMax = widget.isActive ? 1.03 : 1.0;
+    final pulseMin = widget.isActive ? 0.98 : 0.99;
+    final pulseMax = widget.isActive ? 1.02 : 1.0;
 
     return AnimatedBuilder(
       animation: Listenable.merge([_rotateController, _pulseController]),
@@ -666,96 +666,162 @@ class _IridescentOrbState extends State<_IridescentOrb>
         final pulseValue = _pulseController.value;
         final scale = pulseMin + (pulseMax - pulseMin) * pulseValue;
 
+        final glowBlur = widget.isActive ? 60.0 + 20.0 * pulseValue : 60.0;
+        final glowSpread = widget.isActive ? 20.0 + 10.0 * pulseValue : 20.0;
+
+        final highlightShift = Offset(
+          3 * sin(_rotateController.value * 2 * pi),
+          3 * cos(_rotateController.value * 2 * pi),
+        );
+
         return Transform.scale(
           scale: scale,
-          child: Container(
+          child: SizedBox(
             width: widget.size,
             height: widget.size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: widget.isActive ? 0.4 : 0.2,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Layer 1: Ambient Glow (behind the orb)
+                Container(
+                  width: widget.size * 1.3,
+                  height: widget.size * 1.3,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(
+                          alpha:
+                              widget.isActive ? 0.25 + 0.1 * pulseValue : 0.25,
+                        ),
+                        blurRadius: glowBlur,
+                        spreadRadius: glowSpread,
+                      ),
+                      BoxShadow(
+                        color: AppColors.secondary.withValues(
+                          alpha:
+                              widget.isActive ? 0.15 + 0.1 * pulseValue : 0.15,
+                        ),
+                        blurRadius: glowBlur + 20,
+                        spreadRadius: glowSpread + 10,
+                      ),
+                    ],
                   ),
-                  blurRadius: widget.isActive ? 48 : 32,
-                  spreadRadius: widget.isActive ? 8 : 4,
-                  offset: const Offset(0, 8),
                 ),
-                BoxShadow(
-                  color: const Color(0xFFE0C3FC).withOpacity(0.4),
-                  blurRadius: 60,
-                  spreadRadius: 10,
-                  offset: const Offset(-10, -10),
+                // Layers 2-7: Clipped sphere content
+                ClipOval(
+                  child: SizedBox(
+                    width: widget.size,
+                    height: widget.size,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Layer 2: Base Sphere
+                        Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              center: Alignment(-0.3, -0.3),
+                              colors: [
+                                Color(0xFFF0E6FF),
+                                Color(0xFFD4C4FF),
+                                Color(0xFFB8A0FF),
+                                AppColors.primary,
+                                Color(0xFF6B5CD6),
+                              ],
+                              stops: [0.0, 0.25, 0.5, 0.75, 1.0],
+                            ),
+                          ),
+                        ),
+                        // Layer 3: Iridescent Shimmer
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: SweepGradient(
+                              colors: [
+                                Colors.white.withValues(alpha: 0.0),
+                                const Color(0xFFE0D4FF).withValues(alpha: 0.3),
+                                Colors.white.withValues(alpha: 0.15),
+                                const Color(0xFFC4B5FD).withValues(alpha: 0.2),
+                                Colors.white.withValues(alpha: 0.0),
+                              ],
+                              transform: GradientRotation(
+                                _rotateController.value * 2 * pi,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Layer 4: Specular Highlight (the "glint")
+                        Transform.translate(
+                          offset: highlightShift,
+                          child: Align(
+                            alignment: const Alignment(-0.35, -0.35),
+                            child: Container(
+                              width: widget.size * 0.35,
+                              height: widget.size * 0.25,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.5),
+                                    Colors.white.withValues(alpha: 0.1),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Layer 5: Rim Light (edge glow)
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                spreadRadius: -4,
+                                offset: const Offset(-2, -2),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Layer 6: Inner Depth Ring (concavity illusion)
+                        Container(
+                          width: widget.size * 0.72,
+                          height: widget.size * 0.72,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.transparent,
+                                const Color(0xFF4A3FB5).withValues(alpha: 0.35),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Layer 7: Bottom Reflection
+                        Align(
+                          alignment: const Alignment(0, 0.75),
+                          child: Container(
+                            width: widget.size * 0.5,
+                            height: widget.size * 0.15,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.15),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
-            ),
-            child: ClipOval(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Layer 1: Base radial gradient for depth
-                  Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Color(0xFFE0C3FC),
-                          Color(0xFFA78BFA),
-                          Color(0xFF8B5CF6),
-                          Color(0xFF7C3AED),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Layer 2: Rotating SweepGradient blended over the base
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: SweepGradient(
-                        colors: const [
-                          Color(0xFFC4B5FD),
-                          Color(0xFFA78BFA),
-                          Color(0xFF8B5CF6),
-                          Color(0xFFE0C3FC),
-                          Color(0xFFC4B5FD),
-                        ],
-                        transform: GradientRotation(
-                          _rotateController.value * 2 * pi,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Specular highlight (top-left)
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        center: const Alignment(-0.4, -0.4),
-                        radius: 0.5,
-                        colors: [
-                          Colors.white.withOpacity(0.4),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Inner depth ring (concave bowl effect)
-                  Container(
-                    width: widget.size * 0.82, // ~180px when size is 220
-                    height: widget.size * 0.82,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.transparent,
-                          const Color(0xFF7C3AED).withOpacity(0.25),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         );

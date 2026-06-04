@@ -1,6 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/user_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/bottom_nav.dart';
 
@@ -32,8 +36,51 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HomeBody extends StatelessWidget {
+class _HomeBody extends StatefulWidget {
   const _HomeBody();
+
+  @override
+  State<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
+  late final AnimationController _breathController;
+  late final AnimationController _rotateController;
+  late final AnimationController _shimmerController;
+  late final AnimationController _blobController;
+
+  @override
+  void initState() {
+    super.initState();
+    _breathController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..repeat(reverse: true);
+
+    _rotateController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat();
+
+    _blobController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _breathController.dispose();
+    _rotateController.dispose();
+    _shimmerController.dispose();
+    _blobController.dispose();
+    super.dispose();
+  }
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -45,148 +92,522 @@ class _HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 40),
+    final userName = context.watch<UserProvider>().currentUser?.name ?? 'Friend';
 
-            // ── Greeting ──
-            Text(
-              _greeting(),
-              style: const TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              "I'm here whenever you need me.",
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-            ),
+    return Stack(
+      children: [
+        // ── Ambient background blobs ──
+        _buildBlob(
+          top: -60,
+          left: -60,
+          size: 220,
+          color: AppColors.primary.withValues(alpha: 0.06),
+          phase: 0,
+        ),
+        _buildBlob(
+          bottom: 100,
+          right: -80,
+          size: 260,
+          color: AppColors.secondary.withValues(alpha: 0.04),
+          phase: math.pi,
+        ),
+        _buildBlob(
+          top: 180,
+          right: -40,
+          size: 160,
+          color: AppColors.primary.withValues(alpha: 0.04),
+          phase: math.pi * 0.5,
+        ),
 
-            const Spacer(),
+        // ── Content ──
+        SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 24),
 
-            // ── Orb ──
-            Center(
-              child: Container(
-                width: 160,
-                height: 160,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppColors.dreamyBg,
-                ),
-                child: Center(
+                // ── Greeting + Settings ──
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _greeting(),
+                            style: const TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            userName,
+                            style: const TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pushNamed(context, '/settings'),
+                      icon: const Icon(
+                        Icons.settings_outlined,
+                        size: 22,
+                        color: AppColors.textSecondary,
+                      ),
+                      splashRadius: 20,
+                    ),
+                  ],
+                )
+                    .animate()
+                    .fadeIn(delay: 100.ms, duration: 600.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 600.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const Spacer(flex: 2),
+
+                // ── Companion Orb ──
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _breathController,
+                        builder: (context, child) {
+                          final scale = 1.0 + (_breathController.value * 0.03);
+                          return Transform.scale(scale: scale, child: child);
+                        },
+                        child: SizedBox(
+                          width: 140,
+                          height: 140,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Layer 1: outer glow + radial gradient
+                              Container(
+                                width: 140,
+                                height: 140,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.25,
+                                      ),
+                                      blurRadius: 40,
+                                      spreadRadius: 8,
+                                    ),
+                                  ],
+                                  gradient: const RadialGradient(
+                                    center: Alignment(-0.3, -0.3),
+                                    radius: 0.85,
+                                    colors: [
+                                      Color(0xFFF8F6FF),
+                                      AppColors.primaryLight,
+                                      AppColors.primary,
+                                    ],
+                                    stops: [0.0, 0.55, 1.0],
+                                  ),
+                                ),
+                              ),
+
+                              // Layer 2: rotating sweep gradient
+                              RotationTransition(
+                                turns: _rotateController,
+                                child: Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: SweepGradient(
+                                      colors: [
+                                        AppColors.primary.withValues(
+                                          alpha: 0.0,
+                                        ),
+                                        AppColors.primary.withValues(
+                                          alpha: 0.25,
+                                        ),
+                                        AppColors.primary.withValues(
+                                          alpha: 0.0,
+                                        ),
+                                      ],
+                                      stops: const [0.0, 0.5, 1.0],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Layer 3: specular highlight
+                              Positioned(
+                                top: 30,
+                                left: 32,
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.15,
+                                        ),
+                                        blurRadius: 12,
+                                        spreadRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Face
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 5,
+                                        height: 5,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Container(
+                                        width: 5,
+                                        height: 5,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    width: 14,
+                                    height: 7,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(7),
+                                        bottomRight: Radius.circular(7),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.success,
+                            ),
+                          )
+                              .animate(onPlay: (c) => c.repeat())
+                              .scale(
+                                begin: const Offset(1.0, 1.0),
+                                end: const Offset(1.4, 1.4),
+                                duration: 1200.ms,
+                                curve: Curves.easeInOut,
+                              )
+                              .then()
+                              .scale(
+                                begin: const Offset(1.4, 1.4),
+                                end: const Offset(1.0, 1.0),
+                                duration: 1200.ms,
+                                curve: Curves.easeInOut,
+                              ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Dostok is here',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 250.ms, duration: 700.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 700.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const Spacer(flex: 3),
+
+                // ── Primary Action ──
+                Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(26),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/chat'),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // shimmer sweep
+                            Positioned.fill(
+                              child: AnimatedBuilder(
+                                animation: _shimmerController,
+                                builder: (context, child) {
+                                  final v = _shimmerController.value;
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white.withValues(alpha: 0.0),
+                                          Colors.white.withValues(
+                                            alpha: 0.10,
+                                          ),
+                                          Colors.white.withValues(alpha: 0.0),
+                                        ],
+                                        stops: [
+                                          (v - 0.25).clamp(0.0, 1.0),
+                                          v.clamp(0.0, 1.0),
+                                          (v + 0.25).clamp(0.0, 1.0),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.chat_bubble_outline,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Start Chatting',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 400.ms, duration: 700.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 700.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 12),
+
+                // ── Secondary Actions ──
+                Row(
+                  children: [
+                    Expanded(
+                      child: _OutlinedPillButton(
+                        icon: Icons.call_outlined,
+                        label: 'Voice Call',
+                        onTap: () => Navigator.pushNamed(context, '/call'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _OutlinedPillButton(
+                        icon: Icons.sentiment_satisfied_outlined,
+                        label: 'Daily Mood',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Coming soon',
+                                style: TextStyle(fontFamily: 'Cairo'),
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                )
+                    .animate()
+                    .fadeIn(delay: 500.ms, duration: 600.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 600.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 20),
+
+                // ── Recent Activity Hint ──
+                Center(
                   child: Text(
-                    'D',
+                    'You chatted for 12 min yesterday',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      fontSize: 64,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary.withOpacity(0.9),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                      height: 1.3,
                     ),
                   ),
-                ),
-              )
-                  .animate(onPlay: (controller) => controller.repeat())
-                  .scale(
-                    begin: const Offset(1.0, 1.0),
-                    end: const Offset(1.05, 1.05),
-                    duration: 2400.ms,
-                    curve: Curves.easeInOut,
-                  )
-                  .then()
-                  .scale(
-                    begin: const Offset(1.05, 1.05),
-                    end: const Offset(1.0, 1.0),
-                    duration: 2400.ms,
-                    curve: Curves.easeInOut,
-                  ),
+                ).animate().fadeIn(delay: 600.ms, duration: 500.ms),
+
+                const SizedBox(height: 16),
+              ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
 
-            const SizedBox(height: 48),
-
-            // ── Primary Action ──
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/chat'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 4,
-                  shadowColor: AppColors.primary.withOpacity(0.35),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.chat_bubble_outline, size: 20),
-                    SizedBox(width: 10),
-                    Text(
-                      'Chat with Dostok',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+  Widget _buildBlob({
+    double? top,
+    double? left,
+    double? bottom,
+    double? right,
+    required double size,
+    required Color color,
+    required double phase,
+  }) {
+    return Positioned(
+      top: top,
+      left: left,
+      bottom: bottom,
+      right: right,
+      child: AnimatedBuilder(
+        animation: _blobController,
+        builder: (context, child) {
+          final t = _blobController.value * 2 * math.pi + phase;
+          return Transform.translate(
+            offset: Offset(
+              math.sin(t) * 18,
+              math.cos(t * 0.7) * 14,
+            ),
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
 
-            const SizedBox(height: 16),
+class _OutlinedPillButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
 
-            // ── Secondary Action ──
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/call'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  const _OutlinedPillButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.primary, width: 1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 16, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.primary,
+                    height: 1.2,
+                  ),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.call_outlined,
-                      size: 18,
-                      color: AppColors.primary,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Voice Call',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
-
-            const Spacer(flex: 2),
-
-            const SizedBox(height: 80),
-          ],
+          ),
         ),
       ),
     );
