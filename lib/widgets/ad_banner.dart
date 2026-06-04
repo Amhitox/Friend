@@ -100,6 +100,10 @@ class _AdBannerState extends State<AdBanner>
     // Premium / VIP users never see ads.
     if (!subscription.showAds) return;
 
+    // Don't attempt to load if the AdService hasn't been initialized
+    // (e.g. demo mode or unsupported platform).
+    if (!widget.adService.isInitialized) return;
+
     // If the AdService already has a loaded banner, grab it.
     final existing = widget.adService.getBannerAd();
     if (existing != null) {

@@ -90,3 +90,8 @@ flutter:
     - assets/images/
     - assets/animations/
     - assets/icons/
+
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Regular.ttf

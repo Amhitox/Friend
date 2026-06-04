@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../services/referral_service.dart';
 import '../constants/premium_features.dart';
-import '../widgets/referral_card.dart';
 
 /// Screen for managing subscription details, upgrades, and account settings.
 ///
@@ -191,8 +189,6 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
                       _buildUsageBreakdown(),
                       const SizedBox(height: 16),
                       _buildPlanOptions(),
-                      const SizedBox(height: 16),
-                      const ReferralCard(),
                       const SizedBox(height: 16),
                       _buildActionButtons(),
                       const SizedBox(height: 32),

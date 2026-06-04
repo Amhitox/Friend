@@ -103,7 +103,7 @@ class _TrialScreenState extends State<TrialScreen> {
         SnackBar(
           content: Text(
             subService.error ?? 'Maqdrnach nbdaw l-trial. Jrb m3a l-mra jaya.',
-            style: GoogleFonts.cairo(fontWeight: FontWeight.w600),
+            style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w600),
           ),
           backgroundColor: AppColors.error,
         ),
@@ -165,7 +165,7 @@ class _TrialScreenState extends State<TrialScreen> {
               const Gap(24),
               Text(
                 'Bda l-trial!',
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   color: AppColors.textPrimary,
@@ -176,7 +176,7 @@ class _TrialScreenState extends State<TrialScreen> {
               const Gap(10),
               Text(
                 '7 jours Premium bla ma tsrf f centime.\nKol features fta7o lik daba!',
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -206,7 +206,7 @@ class _TrialScreenState extends State<TrialScreen> {
                   ),
                   child: Text(
                     'Bda tst3ml Premium!',
-                    style: GoogleFonts.cairo(
+                    style: TextStyle(fontFamily: 'Cairo', 
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -219,7 +219,7 @@ class _TrialScreenState extends State<TrialScreen> {
               const Gap(12),
               Text(
                 'Ghadi ntsakkr lik 3la had l-3ard mlli l-trial ytssali.',
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -301,7 +301,7 @@ class _TrialScreenState extends State<TrialScreen> {
             onPressed: _continueFree,
             child: Text(
               'Kml b Free',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -334,7 +334,7 @@ class _TrialScreenState extends State<TrialScreen> {
         // Welcome text
         Text(
           'Ahlan bik f Dostok!',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 28,
             fontWeight: FontWeight.w900,
             color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -368,7 +368,7 @@ class _TrialScreenState extends State<TrialScreen> {
               const Gap(8),
               Text(
                 'Jrreb Premium mokan 7 jours!',
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
@@ -389,7 +389,7 @@ class _TrialScreenState extends State<TrialScreen> {
         const Gap(14),
         Text(
           'Kol features li f Premium mftohin lik mokan 7 jours. Bda daba!',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -460,7 +460,7 @@ class _TrialScreenState extends State<TrialScreen> {
       children: [
         Text(
           'Chno ghadi t9der dir:',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 18,
             fontWeight: FontWeight.w800,
             color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -528,7 +528,7 @@ class _TrialScreenState extends State<TrialScreen> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -537,7 +537,7 @@ class _TrialScreenState extends State<TrialScreen> {
                 const Gap(2),
                 Text(
                   desc,
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -598,7 +598,7 @@ class _TrialScreenState extends State<TrialScreen> {
               children: [
                 Text(
                   'La carte bancaire machi nécessaire',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.success,
@@ -607,7 +607,7 @@ class _TrialScreenState extends State<TrialScreen> {
                 const Gap(2),
                 Text(
                   'Bda l-trial daba w lghi f ay w9t bla ma t5ls walu.',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: AppColors.success.withOpacity(0.8),
@@ -646,7 +646,7 @@ class _TrialScreenState extends State<TrialScreen> {
               Flexible(
                 child: Text(
                   'Akthar mn 70% mn users khtar Premium mba3d ma jarraw l-trial',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -678,7 +678,7 @@ class _TrialScreenState extends State<TrialScreen> {
         const Gap(4),
         Text(
           '4.8/5 - 10,000+ users',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -733,7 +733,7 @@ class _TrialScreenState extends State<TrialScreen> {
               ),
               child: Text(
                 'Kml b Free - Ma bghitsh trial',
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -744,7 +744,7 @@ class _TrialScreenState extends State<TrialScreen> {
           // Reassurance
           Text(
             'Lghi ay w9t. La iltizam.',
-            style: GoogleFonts.cairo(
+            style: TextStyle(fontFamily: 'Cairo', 
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: isDark
@@ -857,7 +857,7 @@ class _TrialPulseButtonState extends State<_TrialPulseButton>
                   const Gap(8),
                   Text(
                     'Bda l-trial mokan 7 jours - Gratuit',
-                    style: GoogleFonts.cairo(
+                    style: TextStyle(fontFamily: 'Cairo', 
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),

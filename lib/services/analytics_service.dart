@@ -1,22 +1,35 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
+
+import '../config/firebase_config.dart';
 
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
   factory AnalyticsService() => _instance;
   AnalyticsService._internal();
 
-  late FirebaseAnalytics _analytics;
+  FirebaseAnalytics? _analytics;
   FirebaseAnalyticsObserver? _observer;
 
-  FirebaseAnalytics get analytics => _analytics;
+  FirebaseAnalytics? get analytics => _analytics;
   FirebaseAnalyticsObserver? get observer => _observer;
 
-  Future<void> initialize() async {
-    _analytics = FirebaseAnalytics.instance;
-    _observer = FirebaseAnalyticsObserver(analytics: _analytics);
+  /// Whether Firebase is available (initialized and not in demo mode).
+  bool get _firebaseAvailable =>
+      !FirebaseConfig.isDemoMode && Firebase.apps.isNotEmpty;
 
-    await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
+  Future<void> initialize() async {
+    if (!_firebaseAvailable) {
+      if (kDebugMode) {
+        debugPrint('[Analytics] Demo mode or no Firebase — skipping init');
+      }
+      return;
+    }
+    _analytics = FirebaseAnalytics.instance;
+    _observer = FirebaseAnalyticsObserver(analytics: _analytics!);
+
+    await _analytics!.setAnalyticsCollectionEnabled(!kDebugMode);
 
     if (kDebugMode) {
       debugPrint('[Analytics] Initialized (collection disabled in debug)');
@@ -26,7 +39,7 @@ class AnalyticsService {
   // Generic event logging
   Future<void> logEvent(String name, {Map<String, Object>? params}) async {
     try {
-      await _analytics.logEvent(
+      await _analytics?.logEvent(
         name: name,
         parameters: params,
       );
@@ -42,7 +55,7 @@ class AnalyticsService {
 
   // App lifecycle events
   Future<void> logAppOpen() async {
-    await _analytics.logAppOpen();
+    await _analytics?.logAppOpen();
   }
 
   Future<void> logAppClose() async {
@@ -217,16 +230,16 @@ class AnalyticsService {
   }) async {
     try {
       if (tier != null) {
-        await _analytics.setUserProperty(name: 'user_tier', value: tier);
+        await _analytics?.setUserProperty(name: 'user_tier', value: tier);
       }
       if (daysActive != null) {
-        await _analytics.setUserProperty(
+        await _analytics?.setUserProperty(
           name: 'days_active',
           value: daysActive.toString(),
         );
       }
       if (totalMessages != null) {
-        await _analytics.setUserProperty(
+        await _analytics?.setUserProperty(
           name: 'total_messages',
           value: totalMessages.toString(),
         );
@@ -240,7 +253,7 @@ class AnalyticsService {
 
   Future<void> setUserId(String uid) async {
     try {
-      await _analytics.setUserId(id: uid);
+      await _analytics?.setUserId(id: uid);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[Analytics] Error setting user ID: $e');
@@ -251,7 +264,7 @@ class AnalyticsService {
   // Screen tracking
   Future<void> logScreenView(String screenName, {String? screenClass}) async {
     try {
-      await _analytics.logScreenView(
+      await _analytics?.logScreenView(
         screenName: screenName,
         screenClass: screenClass ?? screenName,
       );
@@ -271,7 +284,7 @@ class AnalyticsService {
     String? transactionId,
   }) async {
     try {
-      await _analytics.logPurchase(
+      await _analytics?.logPurchase(
         currency: currency,
         value: amount,
         items: [

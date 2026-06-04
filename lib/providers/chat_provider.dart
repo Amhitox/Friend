@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
+import '../config/firebase_config.dart';
 import '../models/message.dart';
 
 /// Manages the chat state between the user and the Dostok AI.
@@ -270,8 +272,28 @@ class ChatProvider extends ChangeNotifier {
   // Private helpers
   // ---------------------------------------------------------------------------
 
+  /// Returns a random canned Darija response for demo mode.
+  String _getDemoResponse() {
+    final responses = [
+      'Ahlan! Ana Dostok, sadiqek. Kifach n3awnek l-youm?',
+      'Safi, fhemtek! Chno bghiti nzidou?',
+      'Mzyan bzzaf! Kanbghi nhsdr m3ak darija.',
+      'Hada mzyan! Jrb tani, ghadi yzid yji mzyan.',
+      'Waxxa sadiq, ana hna m3ak. Gouliya chno bghiti!',
+      'Lah y3tik ssa7a! Jrb ntmarnaw m3a b3d.',
+      'Ah, hadchi bzzaf interesting! Zid koul li 3andek.',
+      'Safi safi, koulchi mzyan. Ana m3ak f kol wa9t!',
+    ];
+    return responses[Random().nextInt(responses.length)];
+  }
+
   /// Calls the AI backend to get a response for the given user [input].
   Future<String> _fetchAiResponse(String input) async {
+    // In demo mode, return a canned response after a short delay.
+    if (FirebaseConfig.isDemoMode) {
+      await Future.delayed(const Duration(milliseconds: 1200));
+      return _getDemoResponse();
+    }
     // Build the conversation context from recent messages (last 20).
     final recentMessages =
         _messages.length > 20 ? _messages.sublist(_messages.length - 20) : _messages;

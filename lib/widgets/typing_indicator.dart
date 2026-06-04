@@ -156,7 +156,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 const SizedBox(width: 8),
                 Text(
                   widget.label!,
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 13,
                     color: isDark ? Colors.white54 : Colors.black45,
                   ),

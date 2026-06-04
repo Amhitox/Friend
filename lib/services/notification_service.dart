@@ -33,11 +33,11 @@ class NotificationService {
   NotificationService({
     FirebaseMessaging? messaging,
     FlutterLocalNotificationsPlugin? localNotifications,
-  })  : _messaging = messaging ?? FirebaseMessaging.instance,
+  })  : _messaging = messaging,
         _localNotifications =
             localNotifications ?? FlutterLocalNotificationsPlugin();
 
-  final FirebaseMessaging _messaging;
+  final FirebaseMessaging? _messaging;
   final FlutterLocalNotificationsPlugin _localNotifications;
 
   /// Callback set by the app to handle notification taps.
@@ -63,10 +63,17 @@ class NotificationService {
     try {
       tz_data.initializeTimeZones();
 
-      await _requestPermissions();
+      // Local notifications work without Firebase.
       await _configureLocalNotifications();
-      await _configureFCM();
-      await _subscribeToDefaultTopics();
+
+      // FCM requires Firebase — skip when in demo mode or no messaging instance.
+      if (!FirebaseConfig.isDemoMode && _messaging != null) {
+        await _requestPermissions();
+        await _configureFCM();
+        await _subscribeToDefaultTopics();
+      } else if (kDebugMode) {
+        debugPrint('[NotificationService] Demo mode — skipping FCM setup');
+      }
 
       _initialized = true;
       if (kDebugMode) {
@@ -80,8 +87,10 @@ class NotificationService {
   }
 
   Future<void> _requestPermissions() async {
+    final messaging = _messaging;
+    if (messaging == null) return;
     if (Platform.isIOS || Platform.isMacOS) {
-      await _messaging.requestPermission(
+      await messaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -89,7 +98,7 @@ class NotificationService {
       );
     } else if (Platform.isAndroid) {
       // Android 13+ requires runtime permission.
-      await _messaging.requestPermission(
+      await messaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -98,6 +107,14 @@ class NotificationService {
   }
 
   Future<void> _configureLocalNotifications() async {
+    // flutter_local_notifications only supports Android, iOS, macOS.
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
+      if (kDebugMode) {
+        debugPrint('[NotificationService] Platform not supported — skipping local notifications');
+      }
+      return;
+    }
+
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false, // handled via FCM above
@@ -160,6 +177,9 @@ class NotificationService {
   }
 
   Future<void> _configureFCM() async {
+    final messaging = _messaging;
+    if (messaging == null) return;
+
     // Foreground messages.
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
@@ -169,7 +189,7 @@ class NotificationService {
     });
 
     // App launched from terminated state via notification.
-    final initialMessage = await _messaging.getInitialMessage();
+    final initialMessage = await messaging.getInitialMessage();
     if (initialMessage != null) {
       // Delay slightly so the app has time to set up navigation.
       Future.delayed(const Duration(seconds: 1), () {
@@ -179,9 +199,11 @@ class NotificationService {
   }
 
   Future<void> _subscribeToDefaultTopics() async {
+    final messaging = _messaging;
+    if (messaging == null) return;
     try {
-      await _messaging.subscribeToTopic(FirebaseConfig.topicBroadcast);
-      await _messaging.subscribeToTopic(FirebaseConfig.topicEngagement);
+      await messaging.subscribeToTopic(FirebaseConfig.topicBroadcast);
+      await messaging.subscribeToTopic(FirebaseConfig.topicEngagement);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[NotificationService] Topic subscription failed: $e');
@@ -195,8 +217,10 @@ class NotificationService {
 
   /// Subscribe to an FCM topic for targeted broadcast messages.
   Future<void> subscribeToTopic(String topic) async {
+    final messaging = _messaging;
+    if (messaging == null) return;
     try {
-      await _messaging.subscribeToTopic(topic);
+      await messaging.subscribeToTopic(topic);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[NotificationService] subscribeToTopic($topic) failed: $e');
@@ -206,8 +230,10 @@ class NotificationService {
 
   /// Unsubscribe from an FCM topic.
   Future<void> unsubscribeFromTopic(String topic) async {
+    final messaging = _messaging;
+    if (messaging == null) return;
     try {
-      await _messaging.unsubscribeFromTopic(topic);
+      await messaging.unsubscribeFromTopic(topic);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[NotificationService] unsubscribeFromTopic($topic) failed: $e');

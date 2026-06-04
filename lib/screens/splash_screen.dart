@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,7 +21,6 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Subtle breathing pulse for the logo circle
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1600),
@@ -35,11 +33,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateAfterDelay() async {
-    // Let the splash breathe for at least 2 seconds
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
-    // Determine destination: onboarding (first launch) or home
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -70,9 +66,9 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF5B4BD6), // deep teal
-              Color(0xFF7C6BF5), // teal
-              Color(0xFFB388FF), // lighter teal
+              Color(0xFF5B4BD6),
+              Color(0xFF7C6BF5),
+              Color(0xFFB388FF),
             ],
             stops: [0.0, 0.5, 1.0],
           ),
@@ -83,7 +79,6 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               const Spacer(flex: 2),
 
-              // ---- Animated logo circle ----
               AnimatedBuilder(
                 animation: _pulseScale,
                 builder: (context, child) {
@@ -117,8 +112,9 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   child: Center(
                     child: Text(
-                      'د',
-                      style: GoogleFonts.cairo(
+                      'D',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
                         fontSize: 64,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -138,10 +134,10 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 32),
 
-              // ---- App name ----
               Text(
                 'Dostok',
-                style: GoogleFonts.cairo(
+                style: TextStyle(
+                  fontFamily: 'Cairo',
                   fontSize: 48,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -167,15 +163,14 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 10),
 
-              // ---- Subtitle ----
               Text(
-                'صديقك اللي كيهضر معاك بالدارجة',
-                style: GoogleFonts.cairo(
+                'Your AI companion, always here.',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: Colors.white.withOpacity(0.85),
                 ),
-                textDirection: TextDirection.rtl,
               )
                   .animate()
                   .fadeIn(delay: 700.ms, duration: 600.ms)
@@ -189,7 +184,6 @@ class _SplashScreenState extends State<SplashScreen>
 
               const Spacer(flex: 3),
 
-              // ---- Loading dots ----
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (i) {

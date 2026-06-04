@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:developer' as dev;
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../config/firebase_config.dart';
 import 'subscription_service.dart';
 
 /// Manages non-intrusive ad placements for Dostok's free tier users.
@@ -184,6 +186,17 @@ class AdService {
     if (_isInitialized) {
       dev.log('Already initialized', name: _tag);
       return true;
+    }
+
+    // Skip ads in demo mode or on unsupported platforms.
+    if (FirebaseConfig.isDemoMode) {
+      dev.log('Demo mode — skipping ads', name: _tag);
+      return false;
+    }
+
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      dev.log('Ads not supported on this platform — skipping', name: _tag);
+      return false;
     }
 
     try {

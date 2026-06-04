@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// A loading indicator that displays a rotating set of friendly Darija
+/// A loading indicator that displays a rotating set of friendly
 /// messages beneath a [CircularProgressIndicator].
 ///
 /// The messages cycle every 2 seconds by default, fading in and out smoothly
@@ -11,35 +10,14 @@ import 'package:google_fonts/google_fonts.dart';
 ///
 /// Usage:
 /// ```dart
-/// // Default rotating messages
 /// LoadingWidget()
-///
-/// // Custom messages
-/// LoadingWidget(
-///   messages: ['كنحضّر ليك...', 'واحد شوية...'],
-///   color: Colors.teal,
-/// )
 /// ```
 class LoadingWidget extends StatefulWidget {
-  /// Optional list of Darija messages to cycle through.
-  ///
-  /// When `null` a built-in set of friendly loading messages is used.
   final List<String>? messages;
-
-  /// The accent color for the spinner and text. Defaults to the app's
-  /// primary teal (`Color(0xFF7C6BF5)`).
   final Color? color;
-
-  /// Duration each message stays visible before transitioning.
   final Duration messageDuration;
-
-  /// Duration of the cross-fade animation between messages.
   final Duration animationDuration;
-
-  /// Size of the [CircularProgressIndicator].
   final double spinnerSize;
-
-  /// Stroke width of the [CircularProgressIndicator].
   final double strokeWidth;
 
   const LoadingWidget({
@@ -66,20 +44,18 @@ class _LoadingWidgetState extends State<LoadingWidget>
   int _currentIndex = 0;
   Timer? _timer;
 
-  /// Default Darija loading messages -- warm, casual, and reassuring.
   static const List<String> _defaultMessages = [
-    'شوية ديال الصبر...', // Shwiya d-sbar... = A little patience...
-    'كنتسنّى...', // Kantssenna... = Waiting...
-    'كنفكر شنو نقول ليك...', // Kanfekkar shnu ngoul lik... = Thinking of what to say...
-    'كنحضّر ليك شي حاجة زوينة...', // Kan7addher lik shi 7aja zwina... = Preparing something nice...
-    'تقريبا وجدت...', // Tqriban wjdad... = Almost ready...
-    'واحد لحظة...', // Wahd l-lahda... = One moment...
+    'Just a moment...',
+    'Loading...',
+    'Thinking...',
+    'Preparing something nice...',
+    'Almost ready...',
+    'One moment...',
   ];
 
   @override
   void initState() {
     super.initState();
-
     _messages = widget.messages ?? _defaultMessages;
     _color = widget.color ?? const Color(0xFF7C6BF5);
 
@@ -92,10 +68,7 @@ class _LoadingWidgetState extends State<LoadingWidget>
       curve: Curves.easeInOut,
     );
 
-    // Start fully visible.
     _fadeController.value = 1.0;
-
-    // Cycle messages on a timer.
     _timer = Timer.periodic(widget.messageDuration, (_) => _nextMessage());
   }
 
@@ -108,8 +81,6 @@ class _LoadingWidgetState extends State<LoadingWidget>
 
   void _nextMessage() {
     if (!mounted || _messages.length <= 1) return;
-
-    // Fade out, swap text, fade in.
     _fadeController.reverse().then((_) {
       if (!mounted) return;
       setState(() {
@@ -129,7 +100,6 @@ class _LoadingWidgetState extends State<LoadingWidget>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Spinner.
             SizedBox(
               width: widget.spinnerSize,
               height: widget.spinnerSize,
@@ -139,15 +109,13 @@ class _LoadingWidgetState extends State<LoadingWidget>
               ),
             ),
             const SizedBox(height: 20),
-
-            // Rotating message with fade transition.
             FadeTransition(
               opacity: _fadeAnimation,
               child: Text(
                 _messages[_currentIndex],
                 textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
-                style: GoogleFonts.cairo(
+                style: TextStyle(
+                  fontFamily: 'Cairo',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: isDark ? Colors.white60 : Colors.black54,
@@ -163,21 +131,9 @@ class _LoadingWidgetState extends State<LoadingWidget>
 
 /// A compact inline loading indicator for use inside buttons, list tiles, or
 /// other constrained spaces.
-///
-/// Shows a small spinner with optional Darija text next to it.
-///
-/// Usage:
-/// ```dart
-/// InlineLoadingIndicator(label: 'كنصيفط...') // "Sending..."
-/// ```
 class InlineLoadingIndicator extends StatelessWidget {
-  /// Optional text displayed to the right of the spinner.
   final String? label;
-
-  /// Spinner accent color.
   final Color? color;
-
-  /// Spinner diameter.
   final double size;
 
   const InlineLoadingIndicator({
@@ -207,8 +163,8 @@ class InlineLoadingIndicator extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             label!,
-            textDirection: TextDirection.rtl,
-            style: GoogleFonts.cairo(
+            style: TextStyle(
+              fontFamily: 'Cairo',
               fontSize: 14,
               color: isDark ? Colors.white54 : Colors.black45,
             ),

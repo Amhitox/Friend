@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
+import '../config/firebase_config.dart';
 
 /// Authentication service for Dostok.
 ///
@@ -13,30 +16,43 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 ///
 /// All public methods are safe to call when offline -- Firebase Auth caches
 /// credentials locally and reconciles on reconnect.
+///
+/// In demo mode (no .env / no Firebase), all methods are no-ops and a
+/// hardcoded demo UID is used.
 class AuthService {
   AuthService({FirebaseAuth? auth})
-      : _auth = auth ?? FirebaseAuth.instance;
+      : _isDemo = FirebaseConfig.isDemoMode || Firebase.apps.isEmpty,
+        _auth = auth ?? (FirebaseConfig.isDemoMode || Firebase.apps.isEmpty
+            ? null
+            : FirebaseAuth.instance);
 
-  final FirebaseAuth _auth;
+  final FirebaseAuth? _auth;
+  final bool _isDemo;
+
+  /// Demo-mode UID used when Firebase is unavailable.
+  static const String demoUid = 'demo-user-local';
 
   // ---------------------------------------------------------------------------
   // Streams & getters
   // ---------------------------------------------------------------------------
 
   /// Fires on every auth state change (sign-in, sign-out, token refresh).
-  Stream<User?> get currentUser => _auth.authStateChanges();
+  Stream<User?> get currentUser {
+    if (_isDemo) return Stream.value(null);
+    return _auth!.authStateChanges();
+  }
 
   /// Current user or `null`.
-  User? get user => _auth.currentUser;
+  User? get user => _isDemo ? null : _auth!.currentUser;
 
   /// Convenience UID accessor. Returns `null` when not signed in.
-  String? get uid => _auth.currentUser?.uid;
+  String? get uid => _isDemo ? demoUid : _auth!.currentUser?.uid;
 
   /// Whether an account is currently signed in.
-  bool get isAuthenticated => _auth.currentUser != null;
+  bool get isAuthenticated => _isDemo ? true : _auth!.currentUser != null;
 
   /// Whether the current account is still anonymous (not linked).
-  bool get isAnonymous => _auth.currentUser?.isAnonymous ?? true;
+  bool get isAnonymous => _isDemo ? true : _auth!.currentUser?.isAnonymous ?? true;
 
   // ---------------------------------------------------------------------------
   // Sign in
@@ -47,8 +63,14 @@ class AuthService {
   ///
   /// Returns the [UserCredential] on success, `null` on failure.
   Future<UserCredential?> signInAnonymously() async {
+    if (_isDemo) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] Demo mode — skipping sign-in');
+      }
+      return null;
+    }
     try {
-      final credential = await _auth.signInAnonymously();
+      final credential = await _auth!.signInAnonymously();
       if (kDebugMode) {
         debugPrint('[AuthService] Signed in anonymously: ${credential.user?.uid}');
       }
@@ -69,6 +91,7 @@ class AuthService {
   /// we sign into that existing account instead and return it -- the anonymous
   /// data is then lost (caller should migrate if needed).
   Future<UserCredential?> linkWithGoogle() async {
+    if (_isDemo) return null;
     try {
       final googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return null; // user cancelled
@@ -94,6 +117,7 @@ class AuthService {
   /// Available on iOS 13+ and macOS 10.15+. Returns `null` on unsupported
   /// platforms or when the user cancels.
   Future<UserCredential?> linkWithApple() async {
+    if (_isDemo) return null;
     try {
       final appleCredential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -127,7 +151,7 @@ class AuthService {
   /// `provider-already-linked` or `credential-already-in-use`), we sign in
   /// with that credential instead so the user is not blocked.
   Future<UserCredential?> _linkOrSignIn(AuthCredential credential) async {
-    final currentUser = _auth.currentUser;
+    final currentUser = _auth!.currentUser;
     if (currentUser == null) return null;
 
     try {
@@ -148,7 +172,7 @@ class AuthService {
         if (kDebugMode) {
           debugPrint('[AuthService] Credential in use -- signing into existing account');
         }
-        return await _auth.signInWithCredential(credential);
+        return await _auth!.signInWithCredential(credential);
       }
       rethrow;
     }
@@ -163,10 +187,11 @@ class AuthService {
   /// Returns `true` on success. Callers should show a confirmation dialog
   /// before invoking this.
   Future<bool> signOut() async {
+    if (_isDemo) return true;
     try {
       // Also sign out of Google if applicable.
       await GoogleSignIn().signOut().catchError((_) {});
-      await _auth.signOut();
+      await _auth!.signOut();
       if (kDebugMode) {
         debugPrint('[AuthService] Signed out');
       }
@@ -193,8 +218,9 @@ class AuthService {
   /// step may be skipped. Otherwise the caller should prompt for credentials
   /// and pass them via [reauthCredential].
   Future<bool> deleteAccount({AuthCredential? reauthCredential}) async {
+    if (_isDemo) return true;
     try {
-      final currentUser = _auth.currentUser;
+      final currentUser = _auth!.currentUser;
       if (currentUser == null) return false;
 
       // Re-authenticate if a credential is provided (required for sensitive ops

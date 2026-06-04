@@ -20,6 +20,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class FirebaseConfig {
   static bool _initialized = false;
 
+  /// Whether the app is running in demo mode (no .env / no Firebase).
+  static bool isDemoMode = false;
+
   /// Current environment derived from `FIREBASE_ENV` env variable.
   /// Falls back to `dev` when not set.
   static String get environment =>
@@ -38,7 +41,17 @@ class FirebaseConfig {
 
     try {
       await dotenv.load(fileName: '.env');
+    } catch (e) {
+      // No .env file -- enter demo mode (no Firebase, no backend).
+      isDemoMode = true;
+      _initialized = true;
+      if (kDebugMode) {
+        debugPrint('[FirebaseConfig] No .env file found — entering demo mode');
+      }
+      return;
+    }
 
+    try {
       final options = _resolveOptions();
 
       await Firebase.initializeApp(options: options);
@@ -53,10 +66,18 @@ class FirebaseConfig {
         _initialized = true;
         return;
       }
-      rethrow;
+      // Any other Firebase error (bad config, no network, etc.) -> demo mode.
+      isDemoMode = true;
+      _initialized = true;
+      if (kDebugMode) {
+        debugPrint(
+            '[FirebaseConfig] Firebase error (${e.code}) — entering demo mode');
+      }
     } catch (e, st) {
       debugPrint('[FirebaseConfig] Initialization failed: $e\n$st');
-      rethrow;
+      // Enter demo mode so the UI still works without backend services.
+      isDemoMode = true;
+      _initialized = true;
     }
   }
 

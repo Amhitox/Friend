@@ -1,50 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// A user-friendly error display for the Dostok app.
 ///
-/// Shows a large icon, a friendly Darija (or English) error message, and an
-/// optional retry button. Designed to feel warm rather than alarming -- the
-/// tone is "something small went wrong" not "catastrophic failure".
+/// Shows a large icon, a friendly error message, and an optional retry button.
 ///
 /// Usage:
 /// ```dart
-/// // Default Darija message with retry
 /// AppErrorWidget(onRetry: () => provider.refresh())
-///
-/// // Custom message
-/// AppErrorWidget(
-///   title: 'مكاينش الأنترنت',
-///   message: 'تأكد من الكونيكسيون ديالك',
-///   icon: Icons.wifi_off_rounded,
-///   onRetry: () => provider.refresh(),
-/// )
 /// ```
 class AppErrorWidget extends StatelessWidget {
-  /// Large icon displayed at the top. Defaults to a cloud-off icon.
   final IconData? icon;
-
-  /// Error title shown below the icon. Defaults to a generic Darija message.
   final String? title;
-
-  /// Descriptive error body text. Defaults to a generic Darija description.
   final String? message;
-
-  /// Label for the retry button. Defaults to Darija "Try again".
   final String? retryLabel;
-
-  /// Callback invoked when the user taps the retry button.
-  ///
-  /// When `null` the retry button is not shown.
   final VoidCallback? onRetry;
-
-  /// Accent color for the icon and retry button. Defaults to the app teal.
   final Color? color;
-
-  /// Whether to show a secondary dismiss / close button.
   final bool showDismiss;
-
-  /// Called when the user taps the dismiss button.
   final VoidCallback? onDismiss;
 
   const AppErrorWidget({
@@ -66,10 +37,10 @@ class AppErrorWidget extends StatelessWidget {
     final accentColor = color ?? const Color(0xFF7C6BF5);
 
     final effectiveIcon = icon ?? Icons.cloud_off_rounded;
-    final effectiveTitle = title ?? 'واحد المشكيل!';
+    final effectiveTitle = title ?? 'Oops!';
     final effectiveMessage =
-        message ?? 'وقع شي مشكيل، عاود جرب مرة أخرى';
-    final effectiveRetryLabel = retryLabel ?? 'عاود جرب';
+        message ?? 'Something went wrong. Please try again.';
+    final effectiveRetryLabel = retryLabel ?? 'Try again';
 
     return Center(
       child: Padding(
@@ -77,7 +48,6 @@ class AppErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icon with a subtle background circle.
             Container(
               width: 88,
               height: 88,
@@ -92,41 +62,36 @@ class AppErrorWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Title.
             Text(
               effectiveTitle,
               textAlign: TextAlign.center,
-              textDirection: TextDirection.rtl,
-              style: GoogleFonts.cairo(
+              style: TextStyle(
+                fontFamily: 'Cairo',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 8),
-
-            // Description.
             Text(
               effectiveMessage,
               textAlign: TextAlign.center,
-              textDirection: TextDirection.rtl,
-              style: GoogleFonts.cairo(
+              style: TextStyle(
+                fontFamily: 'Cairo',
                 fontSize: 15,
                 height: 1.5,
                 color: isDark ? Colors.white60 : Colors.black54,
               ),
             ),
             const SizedBox(height: 28),
-
-            // Retry button.
             if (onRetry != null)
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: Text(
                   effectiveRetryLabel,
-                  style: GoogleFonts.cairo(
+                  style: const TextStyle(
+                    fontFamily: 'Cairo',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -145,15 +110,14 @@ class AppErrorWidget extends StatelessWidget {
                   ),
                 ),
               ),
-
-            // Optional dismiss / close button.
             if (showDismiss) ...[
               const SizedBox(height: 12),
               TextButton(
                 onPressed: onDismiss ?? () => Navigator.of(context).maybePop(),
                 child: Text(
-                  'سدّ',
-                  style: GoogleFonts.cairo(
+                  'Close',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
                     fontSize: 14,
                     color: isDark ? Colors.white38 : Colors.black38,
                   ),
@@ -167,28 +131,10 @@ class AppErrorWidget extends StatelessWidget {
   }
 }
 
-/// A small inline error banner that can be embedded inside other widgets
-/// (e.g. above a list, inside a card).
-///
-/// Shows a warning icon, a one-line Darija message, and an optional retry
-/// action.
-///
-/// Usage:
-/// ```dart
-/// InlineErrorBanner(
-///   message: 'مشكيل ف الأنترنت',
-///   onRetry: () => provider.refresh(),
-/// )
-/// ```
+/// A small inline error banner that can be embedded inside other widgets.
 class InlineErrorBanner extends StatelessWidget {
-  /// The error text.
   final String message;
-
-  /// Optional callback for the retry action. When `null` the action button
-  /// is hidden.
   final VoidCallback? onRetry;
-
-  /// Background color override.
   final Color? backgroundColor;
 
   const InlineErrorBanner({
@@ -226,8 +172,8 @@ class InlineErrorBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              textDirection: TextDirection.rtl,
-              style: GoogleFonts.cairo(
+              style: TextStyle(
+                fontFamily: 'Cairo',
                 fontSize: 14,
                 color: textColor,
               ),
@@ -238,8 +184,9 @@ class InlineErrorBanner extends StatelessWidget {
             GestureDetector(
               onTap: onRetry,
               child: Text(
-                'عاود جرب',
-                style: GoogleFonts.cairo(
+                'Retry',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: textColor,

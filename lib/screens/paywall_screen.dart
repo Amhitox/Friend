@@ -183,7 +183,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           SnackBar(
             content: Text(
               'Rja3na l-abonnement dyalek!',
-              style: GoogleFonts.cairo(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.success,
           ),
@@ -240,7 +240,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           const Gap(6),
           Text(
             'Dostok Premium',
-            style: GoogleFonts.cairo(
+            style: TextStyle(fontFamily: 'Cairo', 
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: _goldDark,
@@ -312,7 +312,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         // Tagline
         Text(
           'Khlli Dostok ykoun s7abek l-7a9i9i!',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 24,
             fontWeight: FontWeight.w900,
             color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -326,7 +326,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         const Gap(10),
         Text(
           'Ftah kol features w tla3 m3a Dostok l-level li jaya!',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -468,7 +468,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 color: isSelected
@@ -486,7 +486,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 ),
                 child: Text(
                   badge,
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -618,7 +618,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       ),
                       child: Text(
                         badgeLabel,
-                        style: GoogleFonts.cairo(
+                        style: TextStyle(fontFamily: 'Cairo', 
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: isSelected ? Colors.white : badgeColor,
@@ -629,7 +629,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     // Tier name
                     Text(
                       plan.tier == SubscriptionTier.premium ? 'Premium' : 'VIP',
-                      style: GoogleFonts.cairo(
+                      style: TextStyle(fontFamily: 'Cairo', 
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                         color: isSelected
@@ -641,7 +641,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     // Price
                     Text(
                       '$monthlyPrice MAD',
-                      style: GoogleFonts.cairo(
+                      style: TextStyle(fontFamily: 'Cairo', 
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
                         color: isSelected
@@ -653,7 +653,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       _isYearly
                           ? '/ chhar (m3a l-3am)'
                           : '/ chhar',
-                      style: GoogleFonts.cairo(
+                      style: TextStyle(fontFamily: 'Cairo', 
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: isSelected
@@ -667,7 +667,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       const Gap(4),
                       Text(
                         '${plan.price} MAD/3am',
-                        style: GoogleFonts.cairo(
+                        style: TextStyle(fontFamily: 'Cairo', 
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: isSelected
@@ -763,7 +763,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           Expanded(
             child: Text(
               feature,
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: isSelected
@@ -792,7 +792,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
       children: [
         Text(
           '9arn m3a Free',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 18,
             fontWeight: FontWeight.w800,
             color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -847,7 +847,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             flex: 3,
             child: Text(
               'Feature',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -857,7 +857,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           Expanded(
             child: Text(
               'Free',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -873,7 +873,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 const Gap(3),
                 Text(
                   'Premium',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: _goldDark,
@@ -890,7 +890,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 const Gap(3),
                 Text(
                   'VIP',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: _purpleDark,
@@ -928,7 +928,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             flex: 3,
             child: Text(
               name,
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -959,7 +959,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
       return Center(
         child: Text(
           value,
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: highlight
@@ -988,7 +988,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             const Gap(8),
             Text(
               '10,000+ Moroccan users trust Dostok Premium',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -1017,7 +1017,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         const Gap(4),
         Text(
           '4.8/5 (2,300+ rating)',
-          style: GoogleFonts.cairo(
+          style: TextStyle(fontFamily: 'Cairo', 
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -1072,7 +1072,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         children: [
           Text(
             quote,
-            style: GoogleFonts.cairo(
+            style: TextStyle(fontFamily: 'Cairo', 
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
@@ -1086,7 +1086,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               const Gap(6),
               Text(
                 author,
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: _goldDark,
@@ -1129,7 +1129,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           Expanded(
             child: Text(
               _errorMessage!,
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.error,
@@ -1180,7 +1180,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             onPressed: _isPurchasing ? null : _handleRestore,
             child: Text(
               'Rja3 l-achra',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.primaryLight : AppColors.primary,
@@ -1193,7 +1193,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             children: [
               Text(
                 'Lghi ay w9t. La iltizam.',
-                style: GoogleFonts.cairo(
+                style: TextStyle(fontFamily: 'Cairo', 
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: isDark
@@ -1216,7 +1216,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 },
                 child: Text(
                   'Shurut',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isDark ? AppColors.primaryLight : AppColors.primary,
@@ -1239,7 +1239,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 },
                 child: Text(
                   'Khssousiya',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isDark ? AppColors.primaryLight : AppColors.primary,
@@ -1269,7 +1269,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 const Gap(8),
                 Text(
                   'Jrreb 7 jours gratuitement',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1283,7 +1283,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 const Gap(8),
                 Text(
                   'Subscribe daba - $priceLabel',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1338,7 +1338,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             const Gap(32),
             Text(
               'Mabrouk!',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 36,
                 fontWeight: FontWeight.w900,
                 color: _goldDark,
@@ -1351,7 +1351,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             const Gap(12),
             Text(
               'Dostok Premium mcha m3ak!\nKol features fta7o lik.',
-              style: GoogleFonts.cairo(
+              style: TextStyle(fontFamily: 'Cairo', 
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
@@ -1369,7 +1369,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 onPressed: () => Navigator.of(context).pop(true),
                 child: Text(
                   'Bda tst3ml Premium!',
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(fontFamily: 'Cairo', 
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),

@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/firebase_config.dart';
 import '../providers/user_provider.dart';
 import '../services/analytics_service.dart';
-import '../services/subscription_service.dart';
 import 'trial_screen.dart';
 
-/// Multi-page onboarding flow for the Dostok app.
+/// Simplified multi-page onboarding flow for the Dostok app.
 ///
-/// Walks the user through a warm, Darija-flavored introduction and collects
+/// Walks the user through a warm introduction and collects
 /// their name on the final page. After completion, shows the TrialScreen
 /// before navigating to `/home`.
-///
-/// Monetization integration:
-/// - After final page: shows TrialScreen before home
-/// - Tracks onboarding completion with analytics
-/// - If user skips trial: sets as free tier, stores skip date for 3-day nudge
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -35,16 +29,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _isSaving = false;
   String? _nameError;
 
-  /// Timestamp when onboarding started, for analytics.
   late final DateTime _onboardingStartTime;
 
   static const _totalPages = 4;
 
-  // Brand colors
-  static const _teal = Color(0xFF7C6BF5);
-  static const _tealDark = Color(0xFF5B4BD6);
-  static const _tealLight = Color(0xFFCFC6FF);
-  static const _amber = Color(0xFFC77DFF);
+  static const _primary = Color(0xFF7C6BF5);
+  static const _primaryDark = Color(0xFF5B4BD6);
+  static const _primaryLight = Color(0xFFCFC6FF);
+  static const _accent = Color(0xFFC77DFF);
   static const _warmBg = Color(0xFFF7F5FF);
 
   @override
@@ -61,10 +53,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
-  // Navigation helpers
-  // ---------------------------------------------------------------------------
-
   void _nextPage() {
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
@@ -75,7 +63,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _skipToLast() async {
-    // Track skip analytics.
     AnalyticsService().logOnboardingSkipped(stepSkippedAt: _currentPage);
 
     await _pageController.animateToPage(
@@ -88,7 +75,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _nameError = 'دخل سميتك، عافاك');
+      setState(() => _nameError = 'Please enter your name');
       _nameFocus.requestFocus();
       return;
     }
@@ -97,15 +84,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _isSaving = true;
     });
 
-    // Save the user profile
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.initializeUser(name);
 
-    // Mark onboarding as seen so we don't repeat it
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
 
-    // Track onboarding completion analytics.
     final durationSeconds =
         DateTime.now().difference(_onboardingStartTime).inSeconds;
     AnalyticsService().logOnboardingCompleted(
@@ -115,28 +99,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (!mounted) return;
 
-    // Show TrialScreen before navigating to home.
-    final trialStarted = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const TrialScreen()),
-    );
-
-    if (!mounted) return;
-
-    // If the user skipped the trial, store the skip date for a 3-day nudge.
-    if (trialStarted != true) {
-      await prefs.setString(
-        'trialSkippedDate',
-        DateTime.now().toIso8601String(),
+    if (!FirebaseConfig.isDemoMode) {
+      final trialStarted = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (_) => const TrialScreen()),
       );
-      await prefs.setBool('showUpgradeNudge', true);
+
+      if (!mounted) return;
+
+      if (trialStarted != true) {
+        await prefs.setString(
+          'trialSkippedDate',
+          DateTime.now().toIso8601String(),
+        );
+        await prefs.setBool('showUpgradeNudge', true);
+      }
     }
 
     Navigator.of(context).pushReplacementNamed('/home');
   }
-
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +125,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ---- Top bar: Skip button (hidden on last page) ----
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Padding(
@@ -156,20 +135,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: TextButton(
                     onPressed:
                         _currentPage < _totalPages - 1 ? _skipToLast : null,
-                    child: Text(
-                      'تخطّى',
-                      style: GoogleFonts.cairo(
+                    child: const Text(
+                      'Skip',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: _teal,
+                        color: _primary,
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-
-            // ---- Page content ----
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -184,12 +162,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ],
               ),
             ),
-
-            // ---- Page indicators ----
             _buildPageIndicators(),
             const Gap(12),
-
-            // ---- Bottom button ----
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: SizedBox(
@@ -207,14 +181,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Page 1 -- Welcome
-  // ---------------------------------------------------------------------------
-
   Widget _buildWelcomePage() {
     return _OnboardingPageWrapper(
       children: [
-        // Illustration placeholder -- friendly chat bubble cluster
         _buildIllustration(
           icons: [
             Icons.waving_hand_rounded,
@@ -229,25 +198,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const Gap(40),
         Text(
-          'مرحبا! أنا دوستك',
-          style: GoogleFonts.cairo(
+          'Hey! I am Dostok',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 32,
             fontWeight: FontWeight.w900,
-            color: _tealDark,
+            color: _primaryDark,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 200.ms, duration: 600.ms)
             .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
         const Gap(12),
         Text(
-          'Ana Dostok, صاحبك الجديد!',
-          style: GoogleFonts.cairo(
+          'Your new AI companion',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: _teal,
+            color: _primary,
           ),
           textAlign: TextAlign.center,
         )
@@ -256,25 +226,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             .slideY(begin: 0.2, end: 0, delay: 400.ms, duration: 600.ms),
         const Gap(20),
         Text(
-          'غادي نكون معاك فكل يوم، نهضرو ونتسناو معاك',
-          style: GoogleFonts.cairo(
+          'I am here for you every day to chat, listen, and keep you company.',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Colors.grey.shade600,
             height: 1.5,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 600.ms, duration: 600.ms),
       ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Page 2 -- Language
-  // ---------------------------------------------------------------------------
 
   Widget _buildLanguagePage() {
     return _OnboardingPageWrapper(
@@ -293,11 +259,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const Gap(40),
         Text(
-          'Kanhdro b Darija',
-          style: GoogleFonts.cairo(
+          'Speak Naturally',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 30,
             fontWeight: FontWeight.w900,
-            color: _tealDark,
+            color: _primaryDark,
           ),
           textAlign: TextAlign.center,
         )
@@ -306,40 +273,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
         const Gap(16),
         Text(
-          'كنهضرو بالدارجة المغربية، كيف كتهضر مع صحابك',
-          style: GoogleFonts.cairo(
+          'Talk to me just like you would with a friend. I understand context and emotion.',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 16,
             fontWeight: FontWeight.w500,
             color: Colors.grey.shade600,
             height: 1.6,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 400.ms, duration: 600.ms),
         const Gap(28),
-        _buildFeatureChip(Icons.chat_rounded, 'دارجة طبيعية')
+        _buildFeatureChip(Icons.chat_rounded, 'Natural conversation')
             .animate()
             .fadeIn(delay: 500.ms, duration: 500.ms)
             .slideX(begin: -0.15, end: 0, delay: 500.ms, duration: 500.ms),
         const Gap(10),
-        _buildFeatureChip(Icons.emoji_emotions_rounded, 'Expressions b Darija')
+        _buildFeatureChip(Icons.emoji_emotions_rounded, 'Emotion aware')
             .animate()
             .fadeIn(delay: 650.ms, duration: 500.ms)
             .slideX(begin: -0.15, end: 0, delay: 650.ms, duration: 500.ms),
         const Gap(10),
-        _buildFeatureChip(Icons.auto_awesome_rounded, 'Kayfham l\'context dyalek')
+        _buildFeatureChip(Icons.auto_awesome_rounded, 'Context aware')
             .animate()
             .fadeIn(delay: 800.ms, duration: 500.ms)
             .slideX(begin: -0.15, end: 0, delay: 800.ms, duration: 500.ms),
       ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Page 3 -- Friendship / assistant
-  // ---------------------------------------------------------------------------
 
   Widget _buildFriendPage() {
     return _OnboardingPageWrapper(
@@ -358,11 +321,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const Gap(40),
         Text(
-          'Sadiqek',
-          style: GoogleFonts.cairo(
+          'Your Friend',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 30,
             fontWeight: FontWeight.w900,
-            color: _tealDark,
+            color: _primaryDark,
           ),
           textAlign: TextAlign.center,
         )
@@ -371,50 +335,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
         const Gap(8),
         Text(
-          'صاحبك، ماشي مجرد تطبيق',
-          style: GoogleFonts.cairo(
+          'More than just an app',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: _teal,
+            color: _primary,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 350.ms, duration: 600.ms),
         const Gap(24),
         _buildFeatureTile(
           icon: Icons.headset_mic_rounded,
-          title: 'Kallem m3ak',
-          subtitle: ' talk و كالم معايا بصوتك',
+          title: 'Voice chat',
+          subtitle: 'Talk to me with your voice',
           delay: 500,
         ),
         const Gap(14),
         _buildFeatureTile(
           icon: Icons.celebration_rounded,
-          title: 'Ferhek m3ak',
-          subtitle: 'كنفرحك و نعاونك نهارك يدوز مزيان',
+          title: 'Cheer you up',
+          subtitle: 'I am here to make your day better',
           delay: 650,
         ),
         const Gap(14),
         _buildFeatureTile(
           icon: Icons.school_rounded,
-          title: '3llemek',
-          subtitle: 'كنعلمك حوايج جداد كل نهار',
+          title: 'Learn together',
+          subtitle: 'Discover something new every day',
           delay: 800,
         ),
       ],
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Page 4 -- Setup (name input)
-  // ---------------------------------------------------------------------------
-
   Widget _buildSetupPage() {
     return _OnboardingPageWrapper(
       children: [
-        // Decorative circle avatar
         Container(
           width: 90,
           height: 90,
@@ -423,11 +382,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [_tealLight, _teal],
+              colors: [_primaryLight, _primary],
             ),
             boxShadow: [
               BoxShadow(
-                color: _teal.withOpacity(0.3),
+                color: _primary.withOpacity(0.3),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -449,39 +408,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
         const Gap(32),
         Text(
-          'خلّينا نبداو!',
-          style: GoogleFonts.cairo(
+          'Let us begin!',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 30,
             fontWeight: FontWeight.w900,
-            color: _tealDark,
+            color: _primaryDark,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 200.ms, duration: 600.ms)
             .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
         const Gap(8),
         Text(
-          'شنو سميتك؟',
-          style: GoogleFonts.cairo(
+          'What is your name?',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: _teal,
+            color: _primary,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 350.ms, duration: 600.ms),
         const Gap(32),
-        // Name input field
         _buildNameField(),
         if (_nameError != null) ...[
           const Gap(8),
           Text(
             _nameError!,
-            style: GoogleFonts.cairo(
+            style: TextStyle(
+              fontFamily: 'Cairo',
               fontSize: 13,
               color: Colors.red.shade600,
               fontWeight: FontWeight.w600,
@@ -493,24 +452,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ],
         const Gap(20),
         Text(
-          'هادشي غادي يعاونّي نعرفك مزيان',
-          style: GoogleFonts.cairo(
+          'This helps me get to know you better.',
+          style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 13,
             fontWeight: FontWeight.w500,
             color: Colors.grey.shade500,
           ),
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
         )
             .animate()
             .fadeIn(delay: 600.ms, duration: 500.ms),
       ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Reusable widgets
-  // ---------------------------------------------------------------------------
 
   Widget _buildIllustration({
     required List<IconData> icons,
@@ -562,21 +517,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: _teal.withOpacity(0.08),
+        color: _primary.withOpacity(0.08),
         borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: _teal.withOpacity(0.15)),
+        border: Border.all(color: _primary.withOpacity(0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20, color: _teal),
+          Icon(icon, size: 20, color: _primary),
           const Gap(10),
           Text(
             label,
-            style: GoogleFonts.cairo(
+            style: TextStyle(
+              fontFamily: 'Cairo',
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: _tealDark,
+              color: _primaryDark,
             ),
           ),
         ],
@@ -609,10 +565,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: _teal.withOpacity(0.1),
+              color: _primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: _teal, size: 26),
+            child: Icon(icon, color: _primary, size: 26),
           ),
           const Gap(14),
           Expanded(
@@ -621,20 +577,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: _tealDark,
+                    color: _primaryDark,
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: GoogleFonts.cairo(
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: Colors.grey.shade600,
                   ),
-                  textDirection: TextDirection.rtl,
                 ),
               ],
             ),
@@ -667,14 +624,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           color: _nameError != null
               ? Colors.red.shade400
               : _nameFocus.hasFocus
-                  ? _teal
+                  ? _primary
                   : Colors.grey.shade300,
           width: _nameFocus.hasFocus ? 2.0 : 1.5,
         ),
         boxShadow: [
           if (_nameFocus.hasFocus)
             BoxShadow(
-              color: _teal.withOpacity(0.15),
+              color: _primary.withOpacity(0.15),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -687,14 +644,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         textCapitalization: TextCapitalization.words,
         textInputAction: TextInputAction.done,
         onSubmitted: (_) => _completeOnboarding(),
-        style: GoogleFonts.cairo(
+        style: TextStyle(
+          fontFamily: 'Cairo',
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: _tealDark,
+          color: _primaryDark,
         ),
         decoration: InputDecoration(
-          hintText: '...',
-          hintStyle: GoogleFonts.cairo(
+          hintText: 'Your name',
+          hintStyle: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: Colors.grey.shade300,
@@ -704,7 +663,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           prefixIcon: Icon(
             Icons.edit_rounded,
-            color: _teal.withOpacity(0.5),
+            color: _primary.withOpacity(0.5),
             size: 22,
           ),
         ),
@@ -730,7 +689,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           width: isActive ? 28 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive ? _teal : Colors.grey.shade300,
+            color: isActive ? _primary : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(12),
           ),
         );
@@ -742,26 +701,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return ElevatedButton(
       onPressed: _nextPage,
       style: ElevatedButton.styleFrom(
-        backgroundColor: _teal,
+        backgroundColor: _primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
         elevation: 3,
-        shadowColor: _teal.withOpacity(0.3),
+        shadowColor: _primary.withOpacity(0.3),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: const [
           Text(
-            'التالي',
-            style: GoogleFonts.cairo(
+            'Next',
+            style: TextStyle(
+              fontFamily: 'Cairo',
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const Gap(8),
-          const Icon(Icons.arrow_forward_rounded, size: 22),
+          Gap(8),
+          Icon(Icons.arrow_forward_rounded, size: 22),
         ],
       ),
     ).animate().fadeIn(duration: 300.ms);
@@ -771,13 +731,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return ElevatedButton(
       onPressed: _isSaving ? null : _completeOnboarding,
       style: ElevatedButton.styleFrom(
-        backgroundColor: _amber,
+        backgroundColor: _accent,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
         elevation: 4,
-        shadowColor: _amber.withOpacity(0.4),
+        shadowColor: _accent.withOpacity(0.4),
       ),
       child: _isSaving
           ? const SizedBox(
@@ -790,17 +750,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+              children: const [
                 Text(
-                  'يلاه نبداو!',
-                  style: GoogleFonts.cairo(
+                  'Let us go!',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
-                  textDirection: TextDirection.rtl,
                 ),
-                const Gap(8),
-                const Icon(Icons.rocket_launch_rounded, size: 22),
+                Gap(8),
+                Icon(Icons.rocket_launch_rounded, size: 22),
               ],
             ),
     )
@@ -815,7 +775,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-/// Wraps each onboarding page with consistent padding and centering.
 class _OnboardingPageWrapper extends StatelessWidget {
   const _OnboardingPageWrapper({required this.children});
 

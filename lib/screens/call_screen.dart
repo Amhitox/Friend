@@ -1,31 +1,22 @@
+import 'dart:async';
 import 'dart:math';
 
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/call_provider.dart';
-import '../services/subscription_service.dart';
 import '../services/analytics_service.dart';
-import '../models/subscription.dart';
-import '../widgets/upgrade_prompt_sheet.dart';
+import '../theme/app_colors.dart';
 
 // =============================================================================
-// CallScreen — Full-screen voice call interface for Dostok
+// CallScreen — Premium full-screen voice call interface for Dostok
 // =============================================================================
 
 /// A full-screen voice call UI consumed by [CallProvider].
 ///
-/// Monetization integration:
-/// - Checks canMakeCall() before starting call
-/// - If no call minutes: shows UpgradePromptSheet
-/// - Tracks call duration against quota
-/// - Shows remaining minutes during call
-/// - Warns at 80% usage
-/// - Auto-ends call when quota exhausted (with friendly message)
-/// - Records usage on call end
+/// Features a holographic iridescent orb, minimal bottom controls,
+/// and clean premium typography. All text is in English.
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
 
@@ -38,49 +29,14 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   // Animation controllers
   // ---------------------------------------------------------------------------
 
-  /// Drives the waveform bars in the active state.
-  late final AnimationController _waveformController;
-
-  /// Drives the ring / connecting pulse animation.
-  late final AnimationController _ringController;
-
   /// Drives the fade-in of the ended summary.
   late final AnimationController _summaryFadeController;
-
-  /// Controls the avatar glow pulse.
-  late final AnimationController _glowPulseController;
 
   /// Whether microphone permission was granted.
   bool _micPermissionGranted = false;
 
   /// Error message if permission was denied.
   String? _permissionError;
-
-  /// Whether the call was auto-ended due to quota exhaustion.
-  bool _quotaExhausted = false;
-
-  /// Whether the 80% warning has been shown already.
-  bool _warnedAt80 = false;
-
-  /// The call duration at the time the call started (for tracking).
-  Duration _callDurationAtStart = Duration.zero;
-
-  // Random seed for waveform bar heights so they look organic.
-  final List<double> _waveformSeeds = List.generate(
-    _kWaveformBarCount,
-    (_) => Random().nextDouble(),
-  );
-
-  // ---------------------------------------------------------------------------
-  // Constants
-  // ---------------------------------------------------------------------------
-
-  static const int _kWaveformBarCount = 32;
-  static const double _kAvatarRadius = 56.0;
-  static const Duration _kRingAnimDuration = Duration(seconds: 2);
-  static const Duration _kWaveformAnimDuration = Duration(milliseconds: 600);
-  static const Duration _kSummaryFadeDuration = Duration(milliseconds: 500);
-  static const Duration _kGlowPulseDuration = Duration(seconds: 2);
 
   // ---------------------------------------------------------------------------
   // Lifecycle
@@ -90,25 +46,10 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _waveformController = AnimationController(
-      vsync: this,
-      duration: _kWaveformAnimDuration,
-    )..repeat(reverse: true);
-
-    _ringController = AnimationController(
-      vsync: this,
-      duration: _kRingAnimDuration,
-    )..repeat();
-
     _summaryFadeController = AnimationController(
       vsync: this,
-      duration: _kSummaryFadeDuration,
+      duration: const Duration(milliseconds: 500),
     );
-
-    _glowPulseController = AnimationController(
-      vsync: this,
-      duration: _kGlowPulseDuration,
-    )..repeat(reverse: true);
 
     _initCall();
   }
@@ -125,14 +66,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     });
 
     if (granted) {
-      final subService = context.read<SubscriptionService>();
-
-      // Check if user can make a call.
-      if (!subService.canMakeCall()) {
-        _showCallLimitPrompt(subService);
-        return;
-      }
-
       // Track call start with analytics.
       AnalyticsService().logCallStarted(callType: 'voice');
 
@@ -149,10 +82,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _waveformController.dispose();
-    _ringController.dispose();
     _summaryFadeController.dispose();
-    _glowPulseController.dispose();
 
     // If the call is still active/connecting when the user navigates away,
     // end it gracefully so stats are persisted.
@@ -166,105 +96,17 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   }
 
   // ---------------------------------------------------------------------------
-  // Monetization helpers
+  // Analytics
   // ---------------------------------------------------------------------------
 
-  /// Shows UpgradePromptSheet when user has no call minutes remaining.
-  void _showCallLimitPrompt(SubscriptionService subService) {
-    AnalyticsService().logPaywallShown(
-      trigger: 'call_limit',
-      placement: 'call',
-    );
-
-    UpgradePromptSheet.show(
-      context,
-      limitType: LimitType.callLimit,
-      remaining: 0,
-      onUpgradePremium: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pushNamed('/paywall', arguments: {
-          'highlightFeature': 'voice_calls',
-        });
-      },
-      onUpgradeVIP: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pushNamed('/paywall', arguments: {
-          'highlightFeature': 'voice_calls',
-        });
-      },
-      onDismiss: () {
-        AnalyticsService().logPaywallDismissed(placement: 'call');
-        Navigator.of(context).pop(); // Go back from call screen.
-      },
-    );
-  }
-
-  /// Records call usage in the subscription service.
+  /// Records call usage in analytics.
   void _recordCallUsage(CallProvider callProvider) {
-    final subService = context.read<SubscriptionService>();
     final duration = callProvider.callDuration;
-    final minutes = duration.inSeconds / 60.0;
-
-    if (minutes > 0) {
-      subService.recordCallMinutes(minutes);
+    if (duration.inSeconds > 0) {
       AnalyticsService().logCallEnded(
         durationSeconds: duration.inSeconds,
         callType: 'voice',
       );
-    }
-  }
-
-  /// Checks call quota during an active call. Warns at 80%, auto-ends at limit.
-  void _checkCallQuota(CallProvider callProvider) {
-    final subService = context.read<SubscriptionService>();
-    final maxMinutes = subService.limits.maxCallMinutesPerDay;
-
-    // Unlimited for this tier.
-    if (maxMinutes == -1) return;
-
-    final remainingMinutes = subService.remainingCallMinutes;
-    if (remainingMinutes == -1) return;
-
-    final elapsedMinutes = callProvider.callDuration.inSeconds / 60.0;
-
-    // Auto-end when quota is exhausted.
-    if (elapsedMinutes >= maxMinutes) {
-      if (!_quotaExhausted) {
-        _quotaExhausted = true;
-        _recordCallUsage(callProvider);
-        callProvider.endCall();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'L-moqatelat dyalek salaw l-youm! Upgrade bach tzid.',
-              style: GoogleFonts.cairo(fontWeight: FontWeight.w600),
-            ),
-            backgroundColor: const Color(0xFFFF6B6B),
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
-      return;
-    }
-
-    // Warn at 80% usage.
-    if (!_warnedAt80) {
-      final usedRatio = elapsedMinutes / maxMinutes;
-      if (usedRatio >= 0.8) {
-        _warnedAt80 = true;
-        final remaining = (maxMinutes - elapsedMinutes).ceil();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '$remaining ${remaining == 1 ? "minute" : "minutes"} b9aw',
-              style: GoogleFonts.cairo(fontWeight: FontWeight.w600),
-            ),
-            backgroundColor: const Color(0xFFFFA726),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
     }
   }
 
@@ -274,37 +116,31 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<CallProvider, SubscriptionService>(
-      builder: (context, call, subService, _) {
+    return Consumer<CallProvider>(
+      builder: (context, call, _) {
         // Trigger summary fade-in when the call ends.
         if (call.currentState == CallState.ended &&
             _summaryFadeController.status == AnimationStatus.dismissed) {
           _summaryFadeController.forward();
         }
 
-        // Check quota during active calls.
-        if (call.currentState == CallState.active) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _checkCallQuota(call);
-          });
-        }
-
         return Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBodyBehindAppBar: true,
+          appBar: _buildAppBar(context, call),
           body: Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF5B4BD6), // teal[800]
-                  Color(0xFF4B3FA8), // teal[900]
-                  Color(0xFF1A1A2E), // dark navy
-                ],
-                stops: [0.0, 0.5, 1.0],
-              ),
+              gradient: AppColors.dreamyBg,
             ),
             child: SafeArea(
-              child: _buildBody(context, call, subService),
+              child: Column(
+                children: [
+                  // App bar area already reserved by the Scaffold AppBar.
+                  Expanded(
+                    child: _buildBody(context, call),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -312,12 +148,88 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // AppBar
+  // ---------------------------------------------------------------------------
+
+  PreferredSizeWidget _buildAppBar(BuildContext context, CallProvider call) {
+    final bool isListening =
+        call.currentState == CallState.active && !call.isMuted;
+
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      titleSpacing: 0,
+      toolbarHeight: 64,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                // Back arrow
+                IconButton(
+                  onPressed: () {
+                    if (call.isInCall) {
+                      _recordCallUsage(call);
+                      call.endCall();
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: AppColors.textPrimary,
+                    size: 20,
+                  ),
+                  splashRadius: 24,
+                ),
+                const Spacer(),
+                // Title
+                const Text(
+                  'Voice Chat',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const Spacer(),
+                // Menu icon
+                IconButton(
+                  onPressed: () {
+                    // Placeholder for future call settings / menu
+                  },
+                  icon: const Icon(
+                    Icons.more_vert,
+                    color: AppColors.textPrimary,
+                    size: 24,
+                  ),
+                  splashRadius: 24,
+                ),
+              ],
+            ),
+            if (isListening)
+              const Text(
+                'Listening...',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Delegates to the correct sub-layout based on [CallProvider.currentState].
-  Widget _buildBody(
-    BuildContext context,
-    CallProvider call,
-    SubscriptionService subService,
-  ) {
+  Widget _buildBody(BuildContext context, CallProvider call) {
     // Permission denied — show an error state instead of the call UI.
     if (!_micPermissionGranted) {
       return _buildPermissionDenied();
@@ -325,14 +237,12 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
     switch (call.currentState) {
       case CallState.idle:
-        // Idle is transient; show connecting as a fallback.
-        return _buildConnecting(context, call, subService);
       case CallState.connecting:
-        return _buildConnecting(context, call, subService);
+        return _buildConnecting(context, call);
       case CallState.active:
-        return _buildActive(context, call, subService);
+        return _buildActive(context, call);
       case CallState.ended:
-        return _buildEnded(context, call, subService);
+        return _buildEnded(context, call);
     }
   }
 
@@ -347,29 +257,33 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mic_off_rounded, size: 64, color: Colors.white54),
+            const Icon(
+              Icons.mic_off_rounded,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
             const SizedBox(height: 24),
             Text(
               _permissionError ?? 'Permission required.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.cairo(
+              style: const TextStyle(
+                fontFamily: 'Cairo',
                 fontSize: 18,
-                color: Colors.white70,
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => openAppSettings(),
-              icon: const Icon(Icons.settings),
-              label: Text(
+              icon: const Icon(Icons.settings, color: Colors.white),
+              label: const Text(
                 'Open Settings',
-                style: GoogleFonts.cairo(),
+                style: TextStyle(fontFamily: 'Cairo', color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7C6BF5),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -378,9 +292,12 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
+              child: const Text(
                 'Go Back',
-                style: GoogleFonts.cairo(color: Colors.white54),
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ],
@@ -390,334 +307,295 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   }
 
   // ---------------------------------------------------------------------------
-  // Connecting state — ring animation
+  // Connecting / Idle state
   // ---------------------------------------------------------------------------
 
-  Widget _buildConnecting(
-    BuildContext context,
-    CallProvider call,
-    SubscriptionService subService,
-  ) {
+  Widget _buildConnecting(BuildContext context, CallProvider call) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Spacer(flex: 2),
-
-        // Pulsing ring + avatar
-        _buildAvatarSection(
-          context,
-          call,
-          child: AnimatedBuilder(
-            animation: _ringController,
-            builder: (context, child) {
-              return Container(
-                width: (_kAvatarRadius * 2) + 48,
-                height: (_kAvatarRadius * 2) + 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(
-                      0.3 + 0.3 * sin(_ringController.value * 2 * pi),
-                    ),
-                    width: 2 + 2 * _ringController.value,
-                  ),
-                ),
-              );
-            },
-          ),
+        // Orb
+        const _IridescentOrb(
+          size: 220,
+          isActive: false,
         ),
-
         const SizedBox(height: 32),
-
-        // Status text
-        Text(
-          'Connecting...',
-          style: GoogleFonts.cairo(
-            fontSize: 18,
-            color: Colors.white70,
+        const Text(
+          'Tap to start',
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textSecondary,
           ),
         ),
-
         const Spacer(flex: 3),
-
-        // Cancel button
+        // Bottom controls — mic prominent, others subdued
         Padding(
           padding: const EdgeInsets.only(bottom: 48),
-          child: _EndCallButton(
-            onPressed: () {
-              _recordCallUsage(call);
-              call.endCall();
-            },
-            size: 64,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Active state — full UI (with remaining minutes display)
-  // ---------------------------------------------------------------------------
-
-  Widget _buildActive(
-    BuildContext context,
-    CallProvider call,
-    SubscriptionService subService,
-  ) {
-    final maxMinutes = subService.limits.maxCallMinutesPerDay;
-    final remainingMinutes = maxMinutes == -1
-        ? -1
-        : (maxMinutes - (call.callDuration.inSeconds / 60.0)).clamp(0, maxMinutes);
-
-    return Column(
-      children: [
-        const SizedBox(height: 24),
-
-        // ---- Top: Avatar + name + status + duration ----
-        _buildAvatarSection(context, call),
-        const SizedBox(height: 20),
-        Text(
-          'Dostok',
-          style: GoogleFonts.cairo(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          call.isMuted ? 'Muted' : 'In Call',
-          style: GoogleFonts.cairo(
-            fontSize: 14,
-            color: call.isMuted ? Colors.orangeAccent : Colors.white70,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          call.formattedDuration,
-          style: GoogleFonts.cairo(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.85),
-            letterSpacing: 2,
-          ),
-        ),
-
-        // ---- Remaining minutes indicator (for non-unlimited tiers) ----
-        if (remainingMinutes != -1) ...[
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: remainingMinutes <= 2
-                  ? const Color(0xFFFF6B6B).withOpacity(0.2)
-                  : Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: remainingMinutes <= 2
-                    ? const Color(0xFFFF6B6B).withOpacity(0.4)
-                    : Colors.white.withOpacity(0.15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Opacity(
+                opacity: 0.5,
+                child: _CircleControlButton(
+                  icon: Icons.graphic_eq,
+                  size: 56,
+                  iconColor: AppColors.primary,
+                  backgroundColor: Colors.white,
+                  boxShadow: AppColors.cardShadow,
+                  onPressed: () => call.toggleMute(),
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.timer_outlined,
-                  size: 14,
-                  color: remainingMinutes <= 2
-                      ? const Color(0xFFFF8A8A)
-                      : Colors.white70,
+              const SizedBox(width: 24),
+              _CircleControlButton(
+                icon: Icons.mic,
+                size: 72,
+                iconColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                boxShadow: AppColors.elevatedShadow,
+                onPressed: () {
+                  if (call.currentState == CallState.idle) {
+                    call.startCall();
+                  } else if (call.isMuted) {
+                    call.toggleMute();
+                  }
+                },
+              ),
+              const SizedBox(width: 24),
+              Opacity(
+                opacity: 0.5,
+                child: _CircleControlButton(
+                  icon: Icons.close,
+                  size: 56,
+                  iconColor: AppColors.error,
+                  backgroundColor: Colors.white,
+                  boxShadow: AppColors.cardShadow,
+                  onPressed: () {
+                    _recordCallUsage(call);
+                    call.endCall();
+                  },
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '${remainingMinutes.toStringAsFixed(1)} min b9aw',
-                  style: GoogleFonts.cairo(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: remainingMinutes <= 2
-                        ? const Color(0xFFFF8A8A)
-                        : Colors.white70,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-
-        const SizedBox(height: 24),
-
-        // ---- Middle: Waveform visualization ----
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                // Animated waveform bars
-                _buildWaveform(call),
-                const SizedBox(height: 20),
-
-                // Real-time transcript display area
-                Expanded(
-                  child: _buildTranscriptArea(),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-
-        // ---- Bottom: Controls ----
-        _buildBottomControls(context, call),
       ],
     );
   }
 
   // ---------------------------------------------------------------------------
-  // Ended state — summary (with usage recording)
+  // Active state
   // ---------------------------------------------------------------------------
 
-  Widget _buildEnded(
-    BuildContext context,
-    CallProvider call,
-    SubscriptionService subService,
-  ) {
-    return FadeTransition(
-      opacity: _summaryFadeController,
+  Widget _buildActive(BuildContext context, CallProvider call) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Spacer(flex: 2),
-
-          // Avatar (no glow)
-          CircleAvatar(
-            radius: _kAvatarRadius,
-            backgroundColor: Colors.white.withOpacity(0.15),
-            child: const Icon(
-              Icons.person_rounded,
-              size: 56,
-              color: Colors.white,
+          // Orb
+          const _IridescentOrb(
+            size: 220,
+            isActive: true,
+          ),
+          const SizedBox(height: 32),
+          // Listening dots
+          const _AnimatedDots(
+            baseText: 'Listening',
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
             ),
           ),
-
-          const SizedBox(height: 24),
-
+          const SizedBox(height: 16),
+          // Transcription
+          _buildTranscriptionArea(call),
+          const SizedBox(height: 8),
+          // Duration
           Text(
-            _quotaExhausted ? 'W9t l-mkimat salaw!' : 'Call Ended',
-            style: GoogleFonts.cairo(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            call.formattedDuration,
+            style: const TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+              letterSpacing: 2,
             ),
           ),
+          const Spacer(flex: 3),
+          // Bottom controls
+          _buildBottomControls(context, call),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 12),
+  Widget _buildTranscriptionArea(CallProvider call) {
+    // TODO: wire real STT transcript when available
+    const String transcript = '';
+    final bool hasText = transcript.isNotEmpty;
 
-          // Duration summary
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Text(
+        hasText ? transcript : 'Say something...',
+        textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontFamily: 'Cairo',
+          fontSize: 16,
+          fontWeight: hasText ? FontWeight.w500 : FontWeight.w400,
+          fontStyle: hasText ? FontStyle.normal : FontStyle.italic,
+          color: hasText ? AppColors.textPrimary : AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomControls(BuildContext context, CallProvider call) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Pause / waveform
+        _CircleControlButton(
+          icon: Icons.graphic_eq,
+          size: 56,
+          iconColor: AppColors.primary,
+          backgroundColor: Colors.white,
+          boxShadow: AppColors.cardShadow,
+          onPressed: () => call.toggleMute(),
+        ),
+        const SizedBox(width: 24),
+        // Main mic (primary CTA)
+        _CircleControlButton(
+          icon: Icons.mic,
+          size: 72,
+          iconColor: Colors.white,
+          backgroundColor: AppColors.primary,
+          boxShadow: AppColors.elevatedShadow,
+          onPressed: () {
+            if (call.isMuted) {
+              call.toggleMute();
+            }
+          },
+        ),
+        const SizedBox(width: 24),
+        // Close / end
+        _CircleControlButton(
+          icon: Icons.close,
+          size: 56,
+          iconColor: AppColors.error,
+          backgroundColor: Colors.white,
+          boxShadow: AppColors.cardShadow,
+          onPressed: () {
+            _recordCallUsage(call);
+            call.endCall();
+          },
+        ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Ended state — summary
+  // ---------------------------------------------------------------------------
+
+  Widget _buildEnded(BuildContext context, CallProvider call) {
+    return FadeTransition(
+      opacity: _summaryFadeController,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Spacer(flex: 2),
+            // Orb (static, smaller)
+            const _IridescentOrb(
+              size: 160,
+              isActive: false,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.timer_outlined, color: Colors.white70, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Duration: ${call.formattedDuration}',
-                  style: GoogleFonts.cairo(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Quota exhausted message
-          if (_quotaExhausted) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0C3FC).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFFE0C3FC).withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('⭐', style: TextStyle(fontSize: 20)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Moqatelat dyalek salaw l-youm. Upgrade l-Premium bach tzid!',
-                        style: GoogleFonts.cairo(
-                          fontSize: 13,
-                          color: const Color(0xFFE0C3FC),
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 24),
+            const Text(
+              'Call Ended',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
-          ],
-
-          // Error message if call ended due to an error
-          if (call.error != null) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
+            const SizedBox(height: 12),
+            // Duration summary card
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE8E5F3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.timer_outlined,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Duration: ${call.formattedDuration}',
+                    style: const TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Error message if call ended due to an error
+            if (call.error != null) ...[
+              const SizedBox(height: 16),
+              Text(
                 call.error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.cairo(
+                style: const TextStyle(
+                  fontFamily: 'Cairo',
                   fontSize: 14,
-                  color: Colors.orangeAccent,
+                  color: AppColors.error,
                 ),
               ),
-            ),
-          ],
-
-          const Spacer(flex: 2),
-
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.only(bottom: 48),
-            child: Row(
+            ],
+            const Spacer(flex: 2),
+            // Action buttons
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Call again (only if quota allows)
-                _CircleIconButton(
+                // Call again
+                _CircleIconLabelButton(
                   icon: Icons.call_rounded,
                   label: 'Call Again',
-                  backgroundColor: subService.canMakeCall()
-                      ? const Color(0xFF7C6BF5)
-                      : Colors.grey.shade700,
+                  backgroundColor: AppColors.primary,
                   onPressed: () {
-                    if (subService.canMakeCall()) {
-                      _quotaExhausted = false;
-                      _warnedAt80 = false;
-                      _summaryFadeController.reset();
-                      call.resetCall();
-                      call.startCall();
-                    } else {
-                      _showCallLimitPrompt(subService);
-                    }
+                    call.resetCall();
+                    call.startCall();
                   },
                 ),
                 const SizedBox(width: 40),
                 // Go back
-                _CircleIconButton(
+                _CircleIconLabelButton(
                   icon: Icons.arrow_back_rounded,
                   label: 'Back',
-                  backgroundColor: Colors.white.withOpacity(0.15),
+                  backgroundColor: const Color(0xFFE8E5F3),
+                  iconColor: AppColors.textPrimary,
                   onPressed: () {
                     call.resetCall();
                     Navigator.of(context).pop();
@@ -725,335 +603,279 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Shared widgets
-  // ---------------------------------------------------------------------------
-
-  /// Builds the avatar with optional glow and a [child] decoration overlay.
-  Widget _buildAvatarSection(
-    BuildContext context,
-    CallProvider call, {
-    Widget? child,
-  }) {
-    // Iridescent "listening" orb — a holographic gradient sphere with a soft
-    // specular highlight, echoing the reference voice-assistant design.
-    final avatar = Container(
-      width: _kAvatarRadius * 2,
-      height: _kAvatarRadius * 2,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const RadialGradient(
-          center: Alignment(-0.3, -0.4),
-          radius: 1.1,
-          colors: [
-            Color(0xFFF1E6FF), // bright lavender highlight
-            Color(0xFFC9A9FF), // light orchid
-            Color(0xFF8A6BFF), // vivid purple
-            Color(0xFF5B4BD6), // deep purple
+            const SizedBox(height: 48),
           ],
-          stops: [0.0, 0.38, 0.72, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF7C6BF5).withOpacity(0.55),
-            blurRadius: 48,
-            spreadRadius: 6,
-          ),
-        ],
-      ),
-      child: Align(
-        alignment: const Alignment(-0.4, -0.5),
-        child: Container(
-          width: _kAvatarRadius * 0.55,
-          height: _kAvatarRadius * 0.55,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                Colors.white.withOpacity(0.85),
-                Colors.white.withOpacity(0.0),
-              ],
-            ),
-          ),
         ),
       ),
     );
+  }
+}
 
-    Widget avatarWidget = avatar;
-    if (child != null) {
-      avatarWidget = Stack(
-        alignment: Alignment.center,
-        children: [child, avatar],
-      );
-    }
+// =============================================================================
+// _IridescentOrb — Custom liquid-glass holographic sphere
+// =============================================================================
 
-    // Wrap in AvatarGlow for the active state pulse.
-    if (call.currentState == CallState.active ||
-        call.currentState == CallState.connecting) {
-      return AvatarGlow(
-        glowColor: const Color(0xFF7C6BF5),
-        endRadius: 75.0,
-        animate: true,
-        child: avatarWidget,
-      );
-    }
+class _IridescentOrb extends StatefulWidget {
+  final double size;
+  final bool isActive;
 
-    return avatarWidget;
+  const _IridescentOrb({
+    required this.size,
+    required this.isActive,
+  });
+
+  @override
+  State<_IridescentOrb> createState() => _IridescentOrbState();
+}
+
+class _IridescentOrbState extends State<_IridescentOrb>
+    with TickerProviderStateMixin {
+  late final AnimationController _rotateController;
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _rotateController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
   }
 
-  /// Animated waveform visualization — 32 bars whose heights oscillate.
-  Widget _buildWaveform(CallProvider call) {
-    final isMuted = call.isMuted;
+  @override
+  void dispose() {
+    _rotateController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pulseMin = widget.isActive ? 1.0 : 0.96;
+    final pulseMax = widget.isActive ? 1.03 : 1.0;
 
     return AnimatedBuilder(
-      animation: _waveformController,
-      builder: (context, _) {
-        return SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: List.generate(_kWaveformBarCount, (i) {
-              // Compute a height that oscillate based on the animation value
-              // and the per-bar seed so bars move independently.
-              final seed = _waveformSeeds[i];
-              final phase = (_waveformController.value * 2 * pi) + (seed * pi);
-              final rawHeight = (sin(phase) * 0.5 + 0.5); // 0..1
-              final minHeight = 6.0;
-              final maxHeight = isMuted ? 12.0 : 56.0;
-              final height = minHeight + rawHeight * (maxHeight - minHeight);
+      animation: Listenable.merge([_rotateController, _pulseController]),
+      builder: (context, child) {
+        final pulseValue = _pulseController.value;
+        final scale = pulseMin + (pulseMax - pulseMin) * pulseValue;
 
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
-                width: 4,
-                height: height,
-                margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(2),
-                  color: isMuted
-                      ? Colors.white24
-                      : Colors.white.withOpacity(0.6 + rawHeight * 0.4),
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(
+                    alpha: widget.isActive ? 0.4 : 0.2,
+                  ),
+                  blurRadius: widget.isActive ? 48 : 32,
+                  spreadRadius: widget.isActive ? 8 : 4,
+                  offset: const Offset(0, 8),
                 ),
-              );
-            }),
+                BoxShadow(
+                  color: const Color(0xFFE0C3FC).withOpacity(0.4),
+                  blurRadius: 60,
+                  spreadRadius: 10,
+                  offset: const Offset(-10, -10),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Layer 1: Base radial gradient for depth
+                  Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Color(0xFFE0C3FC),
+                          Color(0xFFA78BFA),
+                          Color(0xFF8B5CF6),
+                          Color(0xFF7C3AED),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Layer 2: Rotating SweepGradient blended over the base
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: SweepGradient(
+                        colors: const [
+                          Color(0xFFC4B5FD),
+                          Color(0xFFA78BFA),
+                          Color(0xFF8B5CF6),
+                          Color(0xFFE0C3FC),
+                          Color(0xFFC4B5FD),
+                        ],
+                        transform: GradientRotation(
+                          _rotateController.value * 2 * pi,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Specular highlight (top-left)
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        center: const Alignment(-0.4, -0.4),
+                        radius: 0.5,
+                        colors: [
+                          Colors.white.withOpacity(0.4),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Inner depth ring (concave bowl effect)
+                  Container(
+                    width: widget.size * 0.82, // ~180px when size is 220
+                    height: widget.size * 0.82,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.transparent,
+                          const Color(0xFF7C3AED).withOpacity(0.25),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
+}
 
-  /// Scrollable transcript display area.
-  Widget _buildTranscriptArea() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Transcript',
-            style: GoogleFonts.cairo(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white38,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Center(
-              child: Text(
-                'Listening...',
-                style: GoogleFonts.cairo(
-                  fontSize: 15,
-                  color: Colors.white38,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+// =============================================================================
+// _AnimatedDots — cycling "..." animation using Timer.periodic
+// =============================================================================
+
+class _AnimatedDots extends StatefulWidget {
+  final String baseText;
+  final TextStyle style;
+
+  const _AnimatedDots({
+    required this.baseText,
+    required this.style,
+  });
+
+  @override
+  State<_AnimatedDots> createState() => _AnimatedDotsState();
+}
+
+class _AnimatedDotsState extends State<_AnimatedDots> {
+  late Timer _timer;
+  int _dotCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 800), (_) {
+      if (mounted) {
+        setState(() {
+          _dotCount = (_dotCount + 1) % 4;
+        });
+      }
+    });
   }
 
-  /// Bottom control bar: mute, speaker, end-call, switch-to-text.
-  Widget _buildBottomControls(BuildContext context, CallProvider call) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Mute
-          _CallControlButton(
-            icon: call.isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-            label: call.isMuted ? 'Unmute' : 'Mute',
-            isActive: call.isMuted,
-            activeColor: Colors.orangeAccent,
-            onPressed: () => call.toggleMute(),
-          ),
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
-          // End call (prominent)
-          _EndCallButton(
-            onPressed: () {
-              _recordCallUsage(call);
-              call.endCall();
-            },
-            size: 72,
-          ),
-
-          // Speaker
-          _CallControlButton(
-            icon: call.isSpeakerOn
-                ? Icons.volume_up_rounded
-                : Icons.volume_down_rounded,
-            label: 'Speaker',
-            isActive: call.isSpeakerOn,
-            activeColor: const Color(0xFF64FFDA),
-            onPressed: () => call.toggleSpeaker(),
-          ),
-
-          // Switch to text
-          _CallControlButton(
-            icon: Icons.chat_bubble_outline_rounded,
-            label: 'Text',
-            isActive: false,
-            onPressed: () {
-              _recordCallUsage(call);
-              call.endCall();
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
+  @override
+  Widget build(BuildContext context) {
+    final dots = '.' * _dotCount;
+    return Text(
+      '${widget.baseText}$dots',
+      style: widget.style,
     );
   }
 }
 
 // =============================================================================
-// Private helper widgets
+// _CircleControlButton — circular icon button with shadow
 // =============================================================================
 
-/// A circular control button used in the bottom call-controls row.
-class _CallControlButton extends StatelessWidget {
+class _CircleControlButton extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final bool isActive;
-  final Color? activeColor;
-  final VoidCallback onPressed;
-
-  const _CallControlButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    this.isActive = false,
-    this.activeColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isActive ? activeColor ?? Colors.white : Colors.white70;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: isActive
-              ? (activeColor ?? Colors.white).withOpacity(0.2)
-              : Colors.white.withOpacity(0.1),
-          shape: const CircleBorder(),
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: SizedBox(
-              width: 56,
-              height: 56,
-              child: Icon(icon, color: color, size: 26),
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: GoogleFonts.cairo(
-            fontSize: 11,
-            color: Colors.white60,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// The prominent red end-call button.
-class _EndCallButton extends StatelessWidget {
-  final VoidCallback onPressed;
   final double size;
+  final Color iconColor;
+  final Color backgroundColor;
+  final List<BoxShadow> boxShadow;
+  final VoidCallback onPressed;
 
-  const _EndCallButton({
+  const _CircleControlButton({
+    required this.icon,
+    required this.size,
+    required this.iconColor,
+    required this.backgroundColor,
+    required this.boxShadow,
     required this.onPressed,
-    this.size = 64,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: Colors.redAccent.shade700,
-          shape: const CircleBorder(),
-          elevation: 6,
-          shadowColor: Colors.redAccent.withOpacity(0.4),
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: SizedBox(
-              width: size,
-              height: size,
-              child: Icon(
-                Icons.call_end_rounded,
-                color: Colors.white,
-                size: size * 0.45,
-              ),
-            ),
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        shape: BoxShape.circle,
+        boxShadow: boxShadow,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: Center(
+            child: Icon(icon, color: iconColor, size: size * 0.4),
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          'End',
-          style: GoogleFonts.cairo(
-            fontSize: 11,
-            color: Colors.redAccent.shade100,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
 
-/// A labeled circular icon button used in the ended-state summary.
-class _CircleIconButton extends StatelessWidget {
+// =============================================================================
+// _CircleIconLabelButton — labeled circular icon button (ended state)
+// =============================================================================
+
+class _CircleIconLabelButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color backgroundColor;
+  final Color? iconColor;
   final VoidCallback onPressed;
 
-  const _CircleIconButton({
+  const _CircleIconLabelButton({
     required this.icon,
     required this.label,
     required this.backgroundColor,
     required this.onPressed,
+    this.iconColor,
   });
 
   @override
@@ -1061,25 +883,43 @@ class _CircleIconButton extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Material(
-          color: backgroundColor,
-          shape: const CircleBorder(),
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: SizedBox(
-              width: 64,
-              height: 64,
-              child: Icon(icon, color: Colors.white, size: 28),
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              onTap: onPressed,
+              customBorder: const CircleBorder(),
+              child: Center(
+                child: Icon(
+                  icon,
+                  color: iconColor ?? Colors.white,
+                  size: 28,
+                ),
+              ),
             ),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: GoogleFonts.cairo(
+          style: const TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 13,
-            color: Colors.white70,
+            color: AppColors.textSecondary,
           ),
         ),
       ],

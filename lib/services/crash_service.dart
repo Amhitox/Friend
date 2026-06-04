@@ -1,17 +1,31 @@
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+
+import '../config/firebase_config.dart';
 
 class CrashService {
   static final CrashService _instance = CrashService._internal();
   factory CrashService() => _instance;
   CrashService._internal();
 
-  FirebaseCrashlytics get _crashlytics => FirebaseCrashlytics.instance;
+  FirebaseCrashlytics? get _crashlytics {
+    if (FirebaseConfig.isDemoMode) return null;
+    if (Firebase.apps.isEmpty) return null;
+    return FirebaseCrashlytics.instance;
+  }
 
   Future<void> initialize() async {
+    if (FirebaseConfig.isDemoMode) {
+      if (kDebugMode) {
+        debugPrint('[CrashService] Demo mode — skipping Crashlytics init');
+      }
+      return;
+    }
+
     // Enable Crashlytics collection (disable in debug for development)
-    await _crashlytics.setCrashlyticsCollectionEnabled(!kDebugMode);
+    await _crashlytics!.setCrashlyticsCollectionEnabled(!kDebugMode);
 
     // Catch Flutter framework errors
     FlutterError.onError = (FlutterErrorDetails details) {
@@ -24,7 +38,7 @@ class CrashService {
 
       // Report to Crashlytics in release mode
       if (!kDebugMode) {
-        _crashlytics.recordFlutterFatalError(details);
+        _crashlytics?.recordFlutterFatalError(details);
       }
     };
 
@@ -52,7 +66,7 @@ class CrashService {
 
     // Report to Crashlytics in release mode
     if (!kDebugMode) {
-      _crashlytics.recordError(error, stackTrace, fatal: true);
+      _crashlytics?.recordError(error, stackTrace, fatal: true);
     }
   }
 
@@ -78,7 +92,7 @@ class CrashService {
         }
       }
 
-      await _crashlytics.recordError(
+      await _crashlytics?.recordError(
         error,
         stack,
         reason: reason,
@@ -101,7 +115,7 @@ class CrashService {
       if (kDebugMode) {
         debugPrint('[CrashService] Log: $message');
       }
-      await _crashlytics.log(message);
+      await _crashlytics?.log(message);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[CrashService] Failed to log: $e');
@@ -112,16 +126,18 @@ class CrashService {
   /// Set a custom key-value pair for crash context
   Future<void> setCustomKey(String key, dynamic value) async {
     try {
+      final crashlytics = _crashlytics;
+      if (crashlytics == null) return;
       if (value is String) {
-        await _crashlytics.setCustomKey(key, value);
+        await crashlytics.setCustomKey(key, value);
       } else if (value is int) {
-        await _crashlytics.setCustomKey(key, value);
+        await crashlytics.setCustomKey(key, value);
       } else if (value is double) {
-        await _crashlytics.setCustomKey(key, value);
+        await crashlytics.setCustomKey(key, value);
       } else if (value is bool) {
-        await _crashlytics.setCustomKey(key, value);
+        await crashlytics.setCustomKey(key, value);
       } else {
-        await _crashlytics.setCustomKey(key, value.toString());
+        await crashlytics.setCustomKey(key, value.toString());
       }
     } catch (e) {
       if (kDebugMode) {
@@ -133,7 +149,7 @@ class CrashService {
   /// Set the user identifier for crash reports
   Future<void> setUserIdentifier(String uid) async {
     try {
-      await _crashlytics.setUserIdentifier(uid);
+      await _crashlytics?.setUserIdentifier(uid);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[CrashService] Failed to set user identifier: $e');
@@ -150,7 +166,7 @@ class CrashService {
         throw Exception('[CrashService] Test crash triggered');
       });
     } else {
-      _crashlytics.crash();
+      _crashlytics?.crash();
     }
   }
 
@@ -179,9 +195,9 @@ class CrashService {
     try {
       if (!kDebugMode) {
         if (fatal) {
-          await _crashlytics.recordFlutterFatalError(details);
+          await _crashlytics?.recordFlutterFatalError(details);
         } else {
-          await _crashlytics.recordFlutterError(details);
+          await _crashlytics?.recordFlutterError(details);
         }
       } else {
         debugPrint('[CrashService] Flutter error: ${details.exception}');
@@ -196,5 +212,6 @@ class CrashService {
   }
 
   /// Check if Crashlytics is enabled
-  bool get isCrashlyticsCollectionEnabled => _crashlytics.isCrashlyticsCollectionEnabled;
+  bool get isCrashlyticsCollectionEnabled =>
+      _crashlytics?.isCrashlyticsCollectionEnabled ?? false;
 }

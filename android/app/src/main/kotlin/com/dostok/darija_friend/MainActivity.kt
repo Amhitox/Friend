@@ -1,4 +1,4 @@
-package com.dostok.app.darija_friend_temp
+package com.dostok.darija_friend
 
 import io.flutter.embedding.android.FlutterActivity
 
