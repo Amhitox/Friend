@@ -29,9 +29,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   bool _isSaving = false;
   String? _nameError;
+  bool _nameFieldFocused = false;
 
   late final AnimationController _orbController;
   late final AnimationController _rotateController;
+  late final AnimationController _blinkController;
 
   @override
   void initState() {
@@ -45,15 +47,42 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       vsync: this,
       duration: const Duration(seconds: 12),
     )..repeat();
+
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+
+    _nameFocus.addListener(_onFocusChange);
+    _startBlinkingLoop();
+  }
+
+  void _onFocusChange() {
+    setState(() => _nameFieldFocused = _nameFocus.hasFocus);
+  }
+
+  void _startBlinkingLoop() {
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (!mounted) return;
+      await _blinkController.forward();
+      if (!mounted) return;
+      await _blinkController.reverse();
+      if (!mounted) return;
+      // Randomize next blink between 3-4.5 seconds
+      final next = 3000 + (math.Random().nextDouble() * 1500).toInt();
+      Future.delayed(Duration(milliseconds: next), _startBlinkingLoop);
+    });
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
+    _nameFocus.removeListener(_onFocusChange);
     _nameFocus.dispose();
     _orbController.dispose();
     _rotateController.dispose();
+    _blinkController.dispose();
     super.dispose();
   }
 
@@ -103,16 +132,42 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           gradient: AppColors.dreamyBg,
         ),
         child: SafeArea(
-          child: PageView(
-            controller: _pageController,
-            physics: const BouncingScrollPhysics(),
+          child: Stack(
             children: [
-              _buildWelcomePage(),
-              _buildNamePage(keyboardInset),
+              // Ambient floating particles behind everything
+              Positioned.fill(
+                child: _buildParticles(),
+              ),
+              PageView(
+                controller: _pageController,
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildWelcomePage(),
+                  _buildNamePage(keyboardInset),
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // Ambient Particles
+  // ─────────────────────────────────────────────
+  Widget _buildParticles() {
+    return Stack(
+      children: const [
+        _FloatingParticle(initialTop: 0.12, initialLeft: 0.15, size: 6, drift: 1.2),
+        _FloatingParticle(initialTop: 0.25, initialLeft: 0.78, size: 5, drift: 0.9),
+        _FloatingParticle(initialTop: 0.45, initialLeft: 0.10, size: 7, drift: 1.5),
+        _FloatingParticle(initialTop: 0.55, initialLeft: 0.85, size: 4, drift: 1.1),
+        _FloatingParticle(initialTop: 0.70, initialLeft: 0.22, size: 6, drift: 0.8),
+        _FloatingParticle(initialTop: 0.82, initialLeft: 0.68, size: 5, drift: 1.3),
+        _FloatingParticle(initialTop: 0.35, initialLeft: 0.55, size: 4, drift: 1.0),
+        _FloatingParticle(initialTop: 0.90, initialLeft: 0.45, size: 6, drift: 1.4),
+      ],
     );
   }
 
@@ -127,7 +182,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         children: [
           const Spacer(),
           _buildLargeOrb(),
-          const Gap(48),
+          const Gap(40),
           Text(
             'Hi there',
             style: TextStyle(
@@ -167,17 +222,43 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   delay: 600.ms,
                   duration: 900.ms,
                   curve: Curves.easeOutCubic),
-          const Gap(12),
-          Text(
-            'Your companion for conversations, late nights, and quiet moments.',
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
+          const Gap(16),
+          // Warm two-line text with heart
+          Column(
+            children: [
+              Text(
+                "I'm here for conversations...",
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Gap(6),
+              Icon(
+                Icons.favorite,
+                size: 14,
+                color: AppColors.primary,
+              )
+                  .animate()
+                  .fadeIn(delay: 1100.ms, duration: 400.ms)
+                  .scale(begin: const Offset(0.0, 0.0), end: const Offset(1.0, 1.0), delay: 1100.ms, duration: 400.ms),
+              const Gap(6),
+              Text(
+                'late nights, and quiet moments.',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           )
               .animate()
               .fadeIn(delay: 900.ms, duration: 900.ms, curve: Curves.easeOut)
@@ -187,6 +268,32 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   delay: 900.ms,
                   duration: 900.ms,
                   curve: Curves.easeOutCubic),
+          const Gap(20),
+          // Page indicator dots
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                ),
+              ),
+              const Gap(8),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.textSecondary.withValues(alpha: 0.3),
+                ),
+              ),
+            ],
+          )
+              .animate()
+              .fadeIn(delay: 1300.ms, duration: 600.ms),
           const Spacer(),
           _buildContinueCue(),
           const Gap(24),
@@ -319,9 +426,134 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   // ─────────────────────────────────────────────
+  // Friendly Face
+  // ─────────────────────────────────────────────
+  Widget _buildFace({required double diameter, required double eyeOffsetY}) {
+    final eyeSize = diameter * 0.06;
+    final pupilSize = eyeSize * 0.4;
+    final eyeSpacing = diameter * 0.16;
+    final smileWidth = diameter * 0.22;
+    final smileHeight = diameter * 0.08;
+    final blushSize = diameter * 0.10;
+
+    return AnimatedBuilder(
+      animation: _blinkController,
+      builder: (context, child) {
+        final blinkScale = 1.0 - (_blinkController.value * 0.9);
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Left eye
+            Positioned(
+              top: diameter * 0.38 + eyeOffsetY,
+              left: diameter * 0.5 - eyeSpacing * 0.5 - eyeSize * 0.5,
+              child: Transform.scale(
+                scaleY: blinkScale,
+                child: Container(
+                  width: eyeSize,
+                  height: eyeSize,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            // Left pupil
+            Positioned(
+              top: diameter * 0.38 + eyeOffsetY + eyeSize * 0.35,
+              left: diameter * 0.5 - eyeSpacing * 0.5 - eyeSize * 0.5 + eyeSize * 0.35,
+              child: Container(
+                width: pupilSize,
+                height: pupilSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF3D2C7A),
+                ),
+              ),
+            ),
+            // Right eye
+            Positioned(
+              top: diameter * 0.38 + eyeOffsetY,
+              left: diameter * 0.5 + eyeSpacing * 0.5 - eyeSize * 0.5,
+              child: Transform.scale(
+                scaleY: blinkScale,
+                child: Container(
+                  width: eyeSize,
+                  height: eyeSize,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            // Right pupil
+            Positioned(
+              top: diameter * 0.38 + eyeOffsetY + eyeSize * 0.35,
+              left: diameter * 0.5 + eyeSpacing * 0.5 - eyeSize * 0.5 + eyeSize * 0.35,
+              child: Container(
+                width: pupilSize,
+                height: pupilSize,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF3D2C7A),
+                ),
+              ),
+            ),
+            // Smile
+            Positioned(
+              top: diameter * 0.52 + eyeOffsetY,
+              child: Container(
+                width: smileWidth,
+                height: smileHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(smileHeight * 0.5),
+                    bottomRight: Radius.circular(smileHeight * 0.5),
+                  ),
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+            // Left blush
+            Positioned(
+              top: diameter * 0.48 + eyeOffsetY,
+              left: diameter * 0.5 - eyeSpacing - blushSize * 0.3,
+              child: Container(
+                width: blushSize,
+                height: blushSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
+            // Right blush
+            Positioned(
+              top: diameter * 0.48 + eyeOffsetY,
+              left: diameter * 0.5 + eyeSpacing - blushSize * 0.7,
+              child: Container(
+                width: blushSize,
+                height: blushSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.15),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ─────────────────────────────────────────────
   // Orbs
   // ─────────────────────────────────────────────
   Widget _buildLargeOrb() {
+    const diameter = 160.0;
     return AnimatedBuilder(
       animation: Listenable.merge([_orbController, _rotateController]),
       builder: (context, child) {
@@ -329,15 +561,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         return Transform.scale(
           scale: breathe,
           child: SizedBox(
-            width: 160,
-            height: 160,
+            width: diameter,
+            height: diameter,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 // Deep radial sphere
                 Container(
-                  width: 160,
-                  height: 160,
+                  width: diameter,
+                  height: diameter,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
@@ -358,8 +590,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 Transform.rotate(
                   angle: _rotateController.value * 2 * math.pi,
                   child: Container(
-                    width: 160,
-                    height: 160,
+                    width: diameter,
+                    height: diameter,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: SweepGradient(
@@ -396,8 +628,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
                 // Soft inner glow shadow
                 Container(
-                  width: 160,
-                  height: 160,
+                  width: diameter,
+                  height: diameter,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
@@ -414,6 +646,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ],
                   ),
                 ),
+                // Face
+                _buildFace(diameter: diameter, eyeOffsetY: 0),
               ],
             ),
           ),
@@ -432,6 +666,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Widget _buildSmallOrb(double keyboardInset) {
     final targetSize = keyboardInset > 0 ? 72.0 : 100.0;
+    final eyeOffsetY = _nameFieldFocused ? 3.0 : 0.0;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
@@ -516,6 +752,20 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ),
                     ],
                   ),
+                ),
+                // Face with animated eye offset when focused
+                TweenAnimationBuilder<double>(
+                  tween: Tween(
+                    end: _nameFieldFocused ? 2.5 : 0.0,
+                  ),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOutCubic,
+                  builder: (context, eyeOffset, child) {
+                    return _buildFace(
+                      diameter: targetSize,
+                      eyeOffsetY: eyeOffset,
+                    );
+                  },
                 ),
               ],
             ),
@@ -661,6 +911,72 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Floating Particle
+// ─────────────────────────────────────────────
+class _FloatingParticle extends StatefulWidget {
+  final double initialTop;
+  final double initialLeft;
+  final double size;
+  final double drift;
+
+  const _FloatingParticle({
+    required this.initialTop,
+    required this.initialLeft,
+    required this.size,
+    required this.drift,
+  });
+
+  @override
+  State<_FloatingParticle> createState() => _FloatingParticleState();
+}
+
+class _FloatingParticleState extends State<_FloatingParticle>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = _controller.value;
+        final driftX = math.sin(t * 2 * math.pi * widget.drift) * 12;
+        final driftY = -t * 40; // float upward slowly
+        final fade = 0.15 + 0.10 * math.sin(t * 2 * math.pi);
+
+        return Positioned(
+          top: MediaQuery.of(context).size.height * widget.initialTop + driftY,
+          left: MediaQuery.of(context).size.width * widget.initialLeft + driftX,
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: fade.clamp(0.12, 0.25)),
+            ),
+          ),
+        );
+      },
     );
   }
 }

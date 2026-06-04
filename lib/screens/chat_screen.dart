@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
@@ -395,7 +397,7 @@ class _ChatScreenState extends State<ChatScreen>
             child: CircularProgressIndicator(
               strokeWidth: 3,
               valueColor: AlwaysStoppedAnimation<Color>(
-                AppColors.primary.withOpacity(0.6),
+                AppColors.primary.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -499,13 +501,35 @@ class _ChatScreenState extends State<ChatScreen>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
+                gradient: AppColors.orbRadial,
               ),
-              child: const Icon(
-                Icons.waving_hand_rounded,
-                size: 40,
-                color: AppColors.primary,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Specular highlight
+                  Positioned(
+                    top: 14,
+                    left: 14,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: 0.5),
+                            Colors.white.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    '👋',
+                    style: TextStyle(fontSize: 32),
+                  ),
+                ],
               ),
             ),
             const Gap(20),
@@ -546,23 +570,31 @@ class _ChatScreenState extends State<ChatScreen>
   }
 
   Widget _buildSuggestionChip(String text) {
-    return ActionChip(
-      label: Text(
-        text,
-        style: const TextStyle(
-          fontFamily: 'Cairo',
-          color: AppColors.primary,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-        ),
-      ),
-      backgroundColor: AppColors.primary.withOpacity(0.08),
-      side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      onPressed: () {
+    return GestureDetector(
+      onTap: () {
         _textController.text = text;
         _sendTextMessage();
       },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontFamily: 'Cairo',
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 
@@ -649,7 +681,7 @@ class _ChatScreenState extends State<ChatScreen>
                     shape: const CircleBorder(),
                   ),
                   onPressed: () {
-                    // Placeholder for future attachment options.
+                    _showSnackBar('Attachments coming soon');
                   },
                 ),
               ),
@@ -706,7 +738,7 @@ class _ChatScreenState extends State<ChatScreen>
                     size: 20,
                   ),
                   onPressed: () {
-                    // Voice input placeholder.
+                    _showSnackBar('Voice messages coming soon');
                   },
                 ),
               ),
@@ -868,7 +900,7 @@ class _MessageBubble extends StatelessWidget {
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
                   color: isUser
-                      ? Colors.white.withOpacity(0.7)
+                      ? Colors.white.withValues(alpha: 0.7)
                       : AppColors.textSecondary,
                 ),
               ),
@@ -966,7 +998,7 @@ class _MessageBubble extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isUser
-                          ? Colors.white.withOpacity(0.3)
+                          ? Colors.white.withValues(alpha: 0.3)
                           : AppColors.primaryContainer,
                     ),
                     child: Icon(
@@ -1003,7 +1035,7 @@ class _MessageBubble extends StatelessWidget {
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
                   color: isUser
-                      ? Colors.white.withOpacity(0.7)
+                      ? Colors.white.withValues(alpha: 0.7)
                       : AppColors.textSecondary,
                 ),
               ),
@@ -1044,30 +1076,68 @@ class _MessageBubble extends StatelessWidget {
 // Voice waveform placeholder
 // -----------------------------------------------------------------------------
 
-class _VoiceWaveform extends StatelessWidget {
+class _VoiceWaveform extends StatefulWidget {
   final bool isUser;
 
   const _VoiceWaveform({required this.isUser});
 
   @override
-  Widget build(BuildContext context) {
-    final heights = <double>[16, 24, 12, 28, 20];
-    final color = isUser ? Colors.white.withOpacity(0.8) : AppColors.primary;
+  State<_VoiceWaveform> createState() => _VoiceWaveformState();
+}
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(5, (index) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          width: 4,
-          height: heights[index],
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
+class _VoiceWaveformState extends State<_VoiceWaveform>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  static const List<double> _baseHeights = [16, 24, 12, 28, 20];
+  static const List<double> _phases = [0, 0.8, 1.6, 2.4, 3.2];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.isUser
+        ? Colors.white.withValues(alpha: 0.8)
+        : AppColors.primary;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = _controller.value * 2 * 3.141592653589793;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (index) {
+            final base = _baseHeights[index];
+            final phase = _phases[index];
+            final factor = 0.4 + 0.6 * ((1 + math.sin(t + phase)) / 2);
+            final height = base * factor;
+
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 4,
+              height: height,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          }),
         );
-      }),
+      },
     );
   }
 }

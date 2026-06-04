@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/chat_provider.dart';
 import '../providers/user_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/bottom_nav.dart';
@@ -27,8 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-          if (index == 2 || index == 3) {
+          if (index == 0) {
+            // stay on home
+          } else if (index == 1) {
+            Navigator.pushNamed(context, '/daily');
+          } else if (index == 2 || index == 3) {
             Navigator.pushNamed(context, '/chat');
+          } else if (index == 4) {
+            Navigator.pushNamed(context, '/settings');
           }
         },
       ),
@@ -90,9 +97,36 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
     return 'Good Night';
   }
 
+  String _formatRelativeTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${dateTime.day}/${dateTime.month}';
+  }
+
+  String _levelLabel(int level) {
+    if (level <= 0) return 'Stranger';
+    if (level == 1) return 'Acquaintance';
+    if (level == 2) return 'Buddy';
+    if (level == 3) return 'Friend';
+    if (level <= 5) return 'Close Friend';
+    if (level <= 8) return 'Best Friend';
+    return 'Companion';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final userName = context.watch<UserProvider>().currentUser?.name ?? 'Friend';
+    final userName =
+        context.watch<UserProvider>().currentUser?.name ?? 'Friend';
+    final chatProvider = context.watch<ChatProvider>();
+    final lastMessage =
+        chatProvider.messages.isNotEmpty ? chatProvider.messages.last : null;
+    final relationshipLevel =
+        context.watch<UserProvider>().currentUser?.relationshipLevel ?? 0;
 
     return Stack(
       children: [
@@ -138,24 +172,24 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _greeting(),
+                            '${_greeting()}, $userName',
                             style: const TextStyle(
                               fontFamily: 'Cairo',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
                               height: 1.3,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            userName,
-                            style: const TextStyle(
+                          const Text(
+                            'Ready when you are.',
+                            style: TextStyle(
                               fontFamily: 'Cairo',
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                              height: 1.2,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textSecondary,
+                              height: 1.3,
                             ),
                           ),
                         ],
@@ -181,7 +215,7 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       curve: Curves.easeOut,
                     ),
 
-                const Spacer(flex: 2),
+                const SizedBox(height: 24),
 
                 // ── Companion Orb ──
                 Center(
@@ -191,19 +225,20 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       AnimatedBuilder(
                         animation: _breathController,
                         builder: (context, child) {
-                          final scale = 1.0 + (_breathController.value * 0.03);
+                          final scale =
+                              1.0 + (_breathController.value * 0.03);
                           return Transform.scale(scale: scale, child: child);
                         },
                         child: SizedBox(
-                          width: 140,
-                          height: 140,
+                          width: 180,
+                          height: 180,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
                               // Layer 1: outer glow + radial gradient
                               Container(
-                                width: 140,
-                                height: 140,
+                                width: 180,
+                                height: 180,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   boxShadow: [
@@ -232,8 +267,8 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                               RotationTransition(
                                 turns: _rotateController,
                                 child: Container(
-                                  width: 80,
-                                  height: 80,
+                                  width: 100,
+                                  height: 100,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     gradient: SweepGradient(
@@ -256,14 +291,16 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
 
                               // Layer 3: specular highlight
                               Positioned(
-                                top: 30,
-                                left: 32,
+                                top: 38,
+                                left: 42,
                                 child: Container(
-                                  width: 30,
-                                  height: 30,
+                                  width: 34,
+                                  height: 34,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white.withValues(alpha: 0.3),
+                                    color: Colors.white.withValues(
+                                      alpha: 0.3,
+                                    ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.white.withValues(
@@ -285,17 +322,17 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Container(
-                                        width: 5,
-                                        height: 5,
+                                        width: 6,
+                                        height: 6,
                                         decoration: const BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: Colors.white,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      const SizedBox(width: 14),
                                       Container(
-                                        width: 5,
-                                        height: 5,
+                                        width: 6,
+                                        height: 6,
                                         decoration: const BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: Colors.white,
@@ -303,17 +340,46 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 10),
                                   Container(
-                                    width: 14,
-                                    height: 7,
+                                    width: 18,
+                                    height: 9,
                                     decoration: const BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(7),
-                                        bottomRight: Radius.circular(7),
+                                        bottomLeft: Radius.circular(9),
+                                        bottomRight: Radius.circular(9),
+                                        topLeft: Radius.circular(3),
+                                        topRight: Radius.circular(3),
                                       ),
                                     ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.08,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.08,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -372,7 +438,7 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       curve: Curves.easeOut,
                     ),
 
-                const Spacer(flex: 3),
+                const SizedBox(height: 24),
 
                 // ── Primary Action ──
                 Container(
@@ -407,11 +473,15 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          Colors.white.withValues(alpha: 0.0),
+                                          Colors.white.withValues(
+                                            alpha: 0.0,
+                                          ),
                                           Colors.white.withValues(
                                             alpha: 0.10,
                                           ),
-                                          Colors.white.withValues(alpha: 0.0),
+                                          Colors.white.withValues(
+                                            alpha: 0.0,
+                                          ),
                                         ],
                                         stops: [
                                           (v - 0.25).clamp(0.0, 1.0),
@@ -504,19 +574,221 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
 
                 const SizedBox(height: 20),
 
-                // ── Recent Activity Hint ──
-                Center(
-                  child: Text(
-                    'You chatted for 12 min yesterday',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary.withValues(alpha: 0.5),
-                      height: 1.3,
+                // ── Recent Conversation Preview ──
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/chat'),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: AppColors.cardShadow,
                     ),
+                    child: lastMessage != null
+                        ? Row(
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primaryContainer,
+                                ),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'D',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Dostok',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      lastMessage.content,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.textSecondary,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _formatRelativeTime(lastMessage.timestamp),
+                                style: const TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.textSecondary,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primaryContainer,
+                                ),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'D',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'No messages yet. Say hi!',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.textSecondary,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
-                ).animate().fadeIn(delay: 600.ms, duration: 500.ms),
+                )
+                    .animate()
+                    .fadeIn(delay: 600.ms, duration: 600.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 600.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 16),
+
+                // ── Today's Mood Quick-Check ──
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: AppColors.cardShadow,
+                  ),
+                  child: const Row(
+                    children: [
+                      Text(
+                        'How are you feeling today?',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                          height: 1.3,
+                        ),
+                      ),
+                      Spacer(),
+                      _MoodButton(emoji: '😊'),
+                      SizedBox(width: 8),
+                      _MoodButton(emoji: '😐'),
+                      SizedBox(width: 8),
+                      _MoodButton(emoji: '😔'),
+                      SizedBox(width: 8),
+                      _MoodButton(emoji: '😴'),
+                    ],
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 700.ms, duration: 600.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 600.ms,
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 16),
+
+                // ── Friendship Level Indicator ──
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/profile'),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor:
+                                (relationshipLevel / 100).clamp(0.0, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Level $relationshipLevel — ${_levelLabel(relationshipLevel)}',
+                        style: const TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    .animate()
+                    .fadeIn(delay: 800.ms, duration: 600.ms)
+                    .slideY(
+                      begin: 0.15,
+                      end: 0,
+                      duration: 600.ms,
+                      curve: Curves.easeOut,
+                    ),
 
                 const SizedBox(height: 16),
               ],
@@ -608,6 +880,43 @@ class _OutlinedPillButton extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MoodButton extends StatelessWidget {
+  final String emoji;
+
+  const _MoodButton({required this.emoji});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Mood tracking coming soon',
+              style: TextStyle(fontFamily: 'Cairo'),
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.primaryContainer,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          emoji,
+          style: const TextStyle(fontSize: 18),
         ),
       ),
     );

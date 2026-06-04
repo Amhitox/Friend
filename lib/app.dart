@@ -8,6 +8,8 @@ import 'screens/onboarding_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/call_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/daily_screen.dart';
 
 class DostokApp extends StatefulWidget {
   const DostokApp({super.key});
@@ -114,6 +116,8 @@ class _DostokAppState extends State<DostokApp> {
         '/home': (context) => const HomeScreen(),
         '/chat': (context) => const ChatScreen(),
         '/call': (context) => const CallScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/daily': (context) => const DailyScreen(),
       },
     );
   }
