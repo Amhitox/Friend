@@ -21,6 +21,10 @@ abstract final class AppColors {
   static const Color textSecondary = Color(0xFF8E8EA0);
   static const Color textSecondaryDark = Color(0xFFB0B0C8);
   static const Color textOnPrimary = Colors.white;
+  static const Color textOnSecondary = Colors.white;
+
+  // Secondary accent
+  static const Color secondary = Color(0xFFE0C3FC);
 
   // Semantic
   static const Color success = Color(0xFF4CAF50);
@@ -28,6 +32,10 @@ abstract final class AppColors {
   static const Color error = Color(0xFFEF5350);
   static const Color errorLight = Color(0xFFFFEBEE);
   static const Color warning = Color(0xFFFFA726);
+
+  // Dividers
+  static const Color divider = Color(0xFFE0E0E0);
+  static const Color dividerDark = Color(0xFF3A3A4A);
 
   // Chat
   static const Color bubbleUser = Color(0xFF8B7BF7);

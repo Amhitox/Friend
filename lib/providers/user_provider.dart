@@ -2,7 +2,6 @@ import 'dart:developer' as dev;
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/user_profile.dart';
 
@@ -13,8 +12,6 @@ import '../models/user_profile.dart';
 class UserProvider extends ChangeNotifier {
   static const String _boxName = 'settings';
   static const String _profileKey = 'userProfile';
-
-  static const Uuid _uuid = Uuid();
 
   UserProfile? _currentUser;
   bool _isLoading = false;

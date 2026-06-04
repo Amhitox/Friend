@@ -10,7 +10,6 @@ import '../screens/settings_screen.dart';
 import '../screens/manage_subscription_screen.dart';
 // TODO: Uncomment when these screens are implemented
 // import '../screens/paywall_screen.dart';
-// import '../screens/trial_screen.dart';
 // import '../screens/celebration_overlay.dart';
 
 /// Centralized routing configuration for the Dostok app.
@@ -61,9 +60,6 @@ abstract final class AppRouter {
   /// Paywall screen for subscription purchases.
   static const String paywall = '/paywall';
 
-  /// Free trial screen for new users.
-  static const String trial = '/trial';
-
   /// Subscription management screen.
   static const String manageSubscription = '/manage-subscription';
 
@@ -89,7 +85,6 @@ abstract final class AppRouter {
     manageSubscription: (_) => const ManageSubscriptionScreen(),
     // TODO: Uncomment when these screens are implemented
     // paywall: (_) => const PaywallScreen(),
-    // trial: (_) => const TrialScreen(),
     // celebration: (_) => const CelebrationOverlay(),
   };
 
@@ -106,7 +101,7 @@ abstract final class AppRouter {
   /// - **Home**: fade + scale (launch feel).
   /// - **Chat/Call**: slide from right (forward navigation feel).
   /// - **Profile/Settings**: slide from bottom (modal sheet feel).
-  /// - **Paywall/Trial**: slide from bottom (modal sheet feel).
+  /// - **Paywall**: slide from bottom (modal sheet feel).
   /// - **Celebration**: fade (overlay feel).
   static Route<dynamic>? onGenerateRoute(RouteSettings routeSettings) {
     final name = routeSettings.name;
@@ -142,11 +137,6 @@ abstract final class AppRouter {
       case paywall:
         // TODO: Replace with PaywallScreen() when implemented
         page = const _PlaceholderScreen(title: 'Paywall');
-        transition = _TransitionType.slideFromBottom;
-
-      case trial:
-        // TODO: Replace with TrialScreen() when implemented
-        page = const _PlaceholderScreen(title: 'Free Trial');
         transition = _TransitionType.slideFromBottom;
 
       case manageSubscription:
@@ -214,7 +204,9 @@ abstract final class AppRouter {
 
   /// Fade + subtle scale-up transition, used for "launching" a screen.
   static Widget _fadeScaleTransition(
-      Animation<double> animation, Widget child) {
+    Animation<double> animation,
+    Widget child,
+  ) {
     final fadeAnim = CurvedAnimation(
       parent: animation,
       curve: Curves.easeInOut,

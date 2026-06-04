@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 /// Available avatar sizes for DostokAvatar.
 enum AvatarSize {
-  /// 40x40 pixels - for chat headers, lists.
   small(40),
-
-  /// 60x60 pixels - default size for most contexts.
   medium(60),
-
-  /// 100x100 pixels - for profiles, featured sections.
   large(100);
 
   final double value;
@@ -18,27 +15,10 @@ enum AvatarSize {
 /// A circular avatar widget for the Dostok app.
 ///
 /// Displays a gradient circle with the letter "D" and optional glow effect.
-/// Supports different sizes and a status dot indicator.
-///
-/// Usage:
-/// ```dart
-/// DostokAvatar(
-///   size: AvatarSize.medium,
-///   showGlow: true,
-///   status: 'online',
-/// )
-/// ```
 class DostokAvatar extends StatefulWidget {
-  /// The size of the avatar.
   final AvatarSize size;
-
-  /// Whether to show the glow animation.
   final bool showGlow;
-
-  /// Status indicator: 'online', 'offline', 'away', or null.
   final String? status;
-
-  /// Custom gradient colors (optional).
   final List<Color>? gradientColors;
 
   const DostokAvatar({
@@ -97,25 +77,21 @@ class _DostokAvatarState extends State<DostokAvatar>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final size = widget.size.value;
     final fontSize = size * 0.4;
 
-    // Default gradient colors
-    final colors = widget.gradientColors ??
-        [
-          theme.colorScheme.primary,
-          theme.colorScheme.primary.withOpacity(0.7),
-          theme.colorScheme.secondary,
-        ];
+    final colors = widget.gradientColors ?? [
+      AppColors.primary,
+      AppColors.primary.withOpacity(0.7),
+      AppColors.primaryDark,
+    ];
 
     return SizedBox(
-      width: size + 16, // Extra space for glow
+      width: size + 16,
       height: size + 16,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Glow effect
           if (widget.showGlow)
             AnimatedBuilder(
               animation: _glowAnimation,
@@ -127,7 +103,7 @@ class _DostokAvatarState extends State<DostokAvatar>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary
+                        color: AppColors.primary
                             .withOpacity(0.3 * _glowAnimation.value),
                         blurRadius: 20 * _glowAnimation.value,
                         spreadRadius: 5 * _glowAnimation.value,
@@ -137,8 +113,6 @@ class _DostokAvatarState extends State<DostokAvatar>
                 );
               },
             ),
-
-          // Avatar circle
           Container(
             width: size,
             height: size,
@@ -150,7 +124,7 @@ class _DostokAvatarState extends State<DostokAvatar>
                 colors: colors,
               ),
               border: Border.all(
-                color: theme.colorScheme.surface,
+                color: Theme.of(context).colorScheme.surface,
                 width: 2,
               ),
             ),
@@ -165,8 +139,6 @@ class _DostokAvatarState extends State<DostokAvatar>
               ),
             ),
           ),
-
-          // Status indicator
           if (widget.status != null)
             Positioned(
               right: 8,
@@ -178,7 +150,7 @@ class _DostokAvatarState extends State<DostokAvatar>
                   shape: BoxShape.circle,
                   color: _getStatusColor(widget.status!),
                   border: Border.all(
-                    color: theme.colorScheme.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     width: 2,
                   ),
                 ),
@@ -189,7 +161,6 @@ class _DostokAvatarState extends State<DostokAvatar>
     );
   }
 
-  /// Returns the color for the given status.
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'online':

@@ -1,19 +1,19 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/firebase_config.dart';
 import '../providers/user_provider.dart';
 import '../services/analytics_service.dart';
-import 'trial_screen.dart';
+import '../theme/app_colors.dart';
 
-/// Simplified multi-page onboarding flow for the Dostok app.
+/// A warm, single-screen onboarding for Dostok.
 ///
-/// Walks the user through a warm introduction and collects
-/// their name on the final page. After completion, shows the TrialScreen
-/// before navigating to `/home`.
+/// No feature carousel. No bullet points. Just a quiet, dreamy
+/// introduction and a single question: "What should I call you?"
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -21,55 +21,38 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController();
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   final FocusNode _nameFocus = FocusNode();
-  int _currentPage = 0;
+
   bool _isSaving = false;
   String? _nameError;
+  bool _hasFocused = false;
 
-  late final DateTime _onboardingStartTime;
-
-  static const _totalPages = 4;
-
-  static const _primary = Color(0xFF7C6BF5);
-  static const _primaryDark = Color(0xFF5B4BD6);
-  static const _primaryLight = Color(0xFFCFC6FF);
-  static const _accent = Color(0xFFC77DFF);
-  static const _warmBg = Color(0xFFF7F5FF);
+  late final AnimationController _orbController;
 
   @override
   void initState() {
     super.initState();
-    _onboardingStartTime = DateTime.now();
+    _orbController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    _nameFocus.addListener(() {
+      if (_nameFocus.hasFocus && !_hasFocused) {
+        setState(() => _hasFocused = true);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
     _nameController.dispose();
     _nameFocus.dispose();
+    _orbController.dispose();
     super.dispose();
-  }
-
-  void _nextPage() {
-    if (_currentPage < _totalPages - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeInOutCubic,
-      );
-    }
-  }
-
-  Future<void> _skipToLast() async {
-    AnalyticsService().logOnboardingSkipped(stepSkippedAt: _currentPage);
-
-    await _pageController.animateToPage(
-      _totalPages - 1,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOutCubic,
-    );
   }
 
   Future<void> _completeOnboarding() async {
@@ -79,6 +62,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _nameFocus.requestFocus();
       return;
     }
+
     setState(() {
       _nameError = null;
       _isSaving = true;
@@ -90,549 +74,177 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
 
-    final durationSeconds =
-        DateTime.now().difference(_onboardingStartTime).inSeconds;
     AnalyticsService().logOnboardingCompleted(
-      durationSeconds: durationSeconds,
-      stepsCompleted: _totalPages,
+      durationSeconds: 0,
+      stepsCompleted: 1,
     );
 
     if (!mounted) return;
-
-    if (!FirebaseConfig.isDemoMode) {
-      final trialStarted = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(builder: (_) => const TrialScreen()),
-      );
-
-      if (!mounted) return;
-
-      if (trialStarted != true) {
-        await prefs.setString(
-          'trialSkippedDate',
-          DateTime.now().toIso8601String(),
-        );
-        await prefs.setBool('showUpgradeNudge', true);
-      }
-    }
-
     Navigator.of(context).pushReplacementNamed('/home');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _warmBg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: AnimatedOpacity(
-                  opacity: _currentPage < _totalPages - 1 ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 250),
-                  child: TextButton(
-                    onPressed:
-                        _currentPage < _totalPages - 1 ? _skipToLast : null,
-                    child: const Text(
-                      'Skip',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: _primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const BouncingScrollPhysics(),
-                onPageChanged: (index) =>
-                    setState(() => _currentPage = index),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.dreamyBg,
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 36),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildWelcomePage(),
-                  _buildLanguagePage(),
-                  _buildFriendPage(),
-                  _buildSetupPage(),
+                  const Gap(40),
+                  _buildOrb(),
+                  const Gap(48),
+                  const Text(
+                    "Hi, I'm Dostok",
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 36,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
+                      .animate()
+                      .fadeIn(delay: 300.ms, duration: 800.ms)
+                      .slideY(begin: 0.25, end: 0, delay: 300.ms, duration: 800.ms, curve: Curves.easeOutCubic),
+                  const Gap(8),
+                  const Text(
+                    'Your AI companion.',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
+                      .animate()
+                      .fadeIn(delay: 500.ms, duration: 700.ms)
+                      .slideY(begin: 0.15, end: 0, delay: 500.ms, duration: 700.ms, curve: Curves.easeOutCubic),
+                  const Gap(56),
+                  _buildNameField()
+                      .animate()
+                      .fadeIn(delay: 800.ms, duration: 700.ms)
+                      .slideY(begin: 0.2, end: 0, delay: 800.ms, duration: 700.ms, curve: Curves.easeOutCubic),
+                  if (_nameError != null) ...[
+                    const Gap(10),
+                    Text(
+                      _nameError!,
+                      style: const TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.error,
+                      ),
+                    )
+                        .animate()
+                        .fadeIn(duration: 250.ms)
+                        .shake(hz: 4, duration: 350.ms),
+                  ],
+                  const Gap(28),
+                  _buildLetsGoButton()
+                      .animate()
+                      .fadeIn(delay: 1000.ms, duration: 600.ms)
+                      .slideY(begin: 0.15, end: 0, delay: 1000.ms, duration: 600.ms, curve: Curves.easeOutCubic),
+                  const Gap(40),
                 ],
               ),
             ),
-            _buildPageIndicators(),
-            const Gap(12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: _currentPage < _totalPages - 1
-                    ? _buildNextButton()
-                    : _buildDoneButton(),
-              ),
-            ),
-            const Gap(24),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildWelcomePage() {
-    return _OnboardingPageWrapper(
-      children: [
-        _buildIllustration(
-          icons: [
-            Icons.waving_hand_rounded,
-            Icons.chat_bubble_rounded,
-            Icons.favorite_rounded,
-          ],
-          colors: const [
-            Color(0xFFC77DFF),
-            Color(0xFF7C6BF5),
-            Color(0xFFEF5350),
-          ],
-        ),
-        const Gap(40),
-        Text(
-          'Hey! I am Dostok',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            color: _primaryDark,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 200.ms, duration: 600.ms)
-            .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
-        const Gap(12),
-        Text(
-          'Your new AI companion',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: _primary,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 400.ms, duration: 600.ms)
-            .slideY(begin: 0.2, end: 0, delay: 400.ms, duration: 600.ms),
-        const Gap(20),
-        Text(
-          'I am here for you every day to chat, listen, and keep you company.',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade600,
-            height: 1.5,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 600.ms, duration: 600.ms),
-      ],
-    );
-  }
-
-  Widget _buildLanguagePage() {
-    return _OnboardingPageWrapper(
-      children: [
-        _buildIllustration(
-          icons: [
-            Icons.translate_rounded,
-            Icons.record_voice_over_rounded,
-            Icons.language_rounded,
-          ],
-          colors: const [
-            Color(0xFF7C6BF5),
-            Color(0xFFB388FF),
-            Color(0xFFCFC6FF),
-          ],
-        ),
-        const Gap(40),
-        Text(
-          'Speak Naturally',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: _primaryDark,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 200.ms, duration: 600.ms)
-            .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
-        const Gap(16),
-        Text(
-          'Talk to me just like you would with a friend. I understand context and emotion.',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade600,
-            height: 1.6,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 400.ms, duration: 600.ms),
-        const Gap(28),
-        _buildFeatureChip(Icons.chat_rounded, 'Natural conversation')
-            .animate()
-            .fadeIn(delay: 500.ms, duration: 500.ms)
-            .slideX(begin: -0.15, end: 0, delay: 500.ms, duration: 500.ms),
-        const Gap(10),
-        _buildFeatureChip(Icons.emoji_emotions_rounded, 'Emotion aware')
-            .animate()
-            .fadeIn(delay: 650.ms, duration: 500.ms)
-            .slideX(begin: -0.15, end: 0, delay: 650.ms, duration: 500.ms),
-        const Gap(10),
-        _buildFeatureChip(Icons.auto_awesome_rounded, 'Context aware')
-            .animate()
-            .fadeIn(delay: 800.ms, duration: 500.ms)
-            .slideX(begin: -0.15, end: 0, delay: 800.ms, duration: 500.ms),
-      ],
-    );
-  }
-
-  Widget _buildFriendPage() {
-    return _OnboardingPageWrapper(
-      children: [
-        _buildIllustration(
-          icons: [
-            Icons.people_rounded,
-            Icons.psychology_rounded,
-            Icons.lightbulb_rounded,
-          ],
-          colors: const [
-            Color(0xFFC77DFF),
-            Color(0xFF7C6BF5),
-            Color(0xFF42A5F5),
-          ],
-        ),
-        const Gap(40),
-        Text(
-          'Your Friend',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: _primaryDark,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 200.ms, duration: 600.ms)
-            .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
-        const Gap(8),
-        Text(
-          'More than just an app',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: _primary,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 350.ms, duration: 600.ms),
-        const Gap(24),
-        _buildFeatureTile(
-          icon: Icons.headset_mic_rounded,
-          title: 'Voice chat',
-          subtitle: 'Talk to me with your voice',
-          delay: 500,
-        ),
-        const Gap(14),
-        _buildFeatureTile(
-          icon: Icons.celebration_rounded,
-          title: 'Cheer you up',
-          subtitle: 'I am here to make your day better',
-          delay: 650,
-        ),
-        const Gap(14),
-        _buildFeatureTile(
-          icon: Icons.school_rounded,
-          title: 'Learn together',
-          subtitle: 'Discover something new every day',
-          delay: 800,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSetupPage() {
-    return _OnboardingPageWrapper(
-      children: [
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [_primaryLight, _primary],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: _primary.withOpacity(0.3),
-                blurRadius: 20,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.person_rounded,
-            size: 44,
-            color: Colors.white,
-          ),
-        )
-            .animate()
-            .fadeIn(duration: 600.ms)
-            .scale(
-              begin: const Offset(0.5, 0.5),
-              end: const Offset(1.0, 1.0),
-              duration: 700.ms,
-              curve: Curves.elasticOut,
-            ),
-        const Gap(32),
-        Text(
-          'Let us begin!',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            color: _primaryDark,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 200.ms, duration: 600.ms)
-            .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 600.ms),
-        const Gap(8),
-        Text(
-          'What is your name?',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: _primary,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 350.ms, duration: 600.ms),
-        const Gap(32),
-        _buildNameField(),
-        if (_nameError != null) ...[
-          const Gap(8),
-          Text(
-            _nameError!,
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 13,
-              color: Colors.red.shade600,
-              fontWeight: FontWeight.w600,
-            ),
-          )
-              .animate()
-              .fadeIn(duration: 300.ms)
-              .shake(hz: 4, duration: 400.ms),
-        ],
-        const Gap(20),
-        Text(
-          'This helps me get to know you better.',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade500,
-          ),
-          textAlign: TextAlign.center,
-        )
-            .animate()
-            .fadeIn(delay: 600.ms, duration: 500.ms),
-      ],
-    );
-  }
-
-  Widget _buildIllustration({
-    required List<IconData> icons,
-    required List<Color> colors,
-  }) {
-    return SizedBox(
-      height: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(icons.length, (i) {
-          final offset = (i - 1).toDouble();
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Transform.translate(
-              offset: Offset(0, offset.abs() * 12),
-              child: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: colors[i].withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: colors[i].withOpacity(0.25),
-                    width: 1.5,
-                  ),
-                ),
-                child: Icon(icons[i], size: 34, color: colors[i]),
-              )
-                  .animate()
-                  .fadeIn(
-                    delay: Duration(milliseconds: 100 * i),
-                    duration: 500.ms,
-                  )
-                  .scale(
-                    begin: const Offset(0.6, 0.6),
-                    end: const Offset(1.0, 1.0),
-                    delay: Duration(milliseconds: 100 * i),
-                    duration: 500.ms,
-                    curve: Curves.elasticOut,
-                  ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildFeatureChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: _primary.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: _primary.withOpacity(0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 20, color: _primary),
-          const Gap(10),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: _primaryDark,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required int delay,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
+  Widget _buildOrb() {
+    return AnimatedBuilder(
+      animation: _orbController,
+      builder: (context, child) {
+        final breathe = 1.0 + 0.04 * math.sin(_orbController.value * 2 * math.pi);
+        return Transform.scale(
+          scale: breathe,
+          child: Container(
+            width: 140,
+            height: 140,
             decoration: BoxDecoration(
-              color: _primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: _primary, size: 26),
-          ),
-          const Gap(14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: _primaryDark,
-                  ),
+              shape: BoxShape.circle,
+              gradient: AppColors.orbGradient,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.35),
+                  blurRadius: 40,
+                  spreadRadius: 4,
                 ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
-                  ),
+                BoxShadow(
+                  color: AppColors.secondary.withValues(alpha: 0.2),
+                  blurRadius: 60,
+                  spreadRadius: 12,
                 ),
               ],
             ),
+            child: const Center(
+              child: Text(
+                'D',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 56,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -1,
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     )
         .animate()
-        .fadeIn(
-          delay: Duration(milliseconds: delay),
-          duration: 500.ms,
-        )
-        .slideX(
-          begin: -0.12,
-          end: 0,
-          delay: Duration(milliseconds: delay),
-          duration: 500.ms,
-          curve: Curves.easeOutCubic,
+        .fadeIn(duration: 900.ms)
+        .scale(
+          begin: const Offset(0.7, 0.7),
+          end: const Offset(1.0, 1.0),
+          duration: 900.ms,
+          curve: Curves.easeOutBack,
         );
   }
 
   Widget _buildNameField() {
+    final isFocused = _nameFocus.hasFocus;
+    final borderColor = _nameError != null
+        ? AppColors.error
+        : isFocused
+            ? AppColors.primary
+            : Colors.transparent;
+
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 36),
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: _nameError != null
-              ? Colors.red.shade400
-              : _nameFocus.hasFocus
-                  ? _primary
-                  : Colors.grey.shade300,
-          width: _nameFocus.hasFocus ? 2.0 : 1.5,
+          color: borderColor,
+          width: isFocused ? 2 : 1.5,
         ),
         boxShadow: [
-          if (_nameFocus.hasFocus)
+          if (isFocused)
             BoxShadow(
-              color: _primary.withOpacity(0.15),
-              blurRadius: 16,
+              color: AppColors.primary.withValues(alpha: 0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            )
+          else
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
         ],
@@ -644,155 +256,73 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         textCapitalization: TextCapitalization.words,
         textInputAction: TextInputAction.done,
         onSubmitted: (_) => _completeOnboarding(),
-        style: TextStyle(
+        style: const TextStyle(
           fontFamily: 'Cairo',
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: _primaryDark,
+          color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
-          hintText: 'Your name',
+          hintText: 'What should I call you?',
           hintStyle: TextStyle(
             fontFamily: 'Cairo',
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w500,
-            color: Colors.grey.shade300,
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          prefixIcon: Icon(
-            Icons.edit_rounded,
-            color: _primary.withOpacity(0.5),
-            size: 22,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 18,
           ),
         ),
         onChanged: (_) {
           if (_nameError != null) setState(() => _nameError = null);
         },
       ),
-    )
-        .animate()
-        .fadeIn(delay: 450.ms, duration: 600.ms)
-        .slideY(begin: 0.15, end: 0, delay: 450.ms, duration: 600.ms);
-  }
-
-  Widget _buildPageIndicators() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(_totalPages, (i) {
-        final isActive = i == _currentPage;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeInOut,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: isActive ? 28 : 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: isActive ? _primary : Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(12),
-          ),
-        );
-      }),
     );
   }
 
-  Widget _buildNextButton() {
-    return ElevatedButton(
-      onPressed: _nextPage,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _primary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        elevation: 3,
-        shadowColor: _primary.withOpacity(0.3),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text(
-            'Next',
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
+  Widget _buildLetsGoButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isSaving ? null : _completeOnboarding,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          Gap(8),
-          Icon(Icons.arrow_forward_rounded, size: 22),
-        ],
-      ),
-    ).animate().fadeIn(duration: 300.ms);
-  }
-
-  Widget _buildDoneButton() {
-    return ElevatedButton(
-      onPressed: _isSaving ? null : _completeOnboarding,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _accent,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          elevation: 0,
         ),
-        elevation: 4,
-        shadowColor: _accent.withOpacity(0.4),
-      ),
-      child: _isSaving
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: Colors.white,
-              ),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  'Let us go!',
-                  style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+        child: _isSaving
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
                 ),
-                Gap(8),
-                Icon(Icons.rocket_launch_rounded, size: 22),
-              ],
-            ),
-    )
-        .animate()
-        .fadeIn(duration: 300.ms)
-        .scale(
-          begin: const Offset(0.95, 0.95),
-          end: const Offset(1.0, 1.0),
-          duration: 300.ms,
-          curve: Curves.easeOut,
-        );
-  }
-}
-
-class _OnboardingPageWrapper extends StatelessWidget {
-  const _OnboardingPageWrapper({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Gap(16),
-          ...children,
-          const Gap(16),
-        ],
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Let's go",
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Gap(8),
+                  Icon(Icons.arrow_forward_rounded, size: 22),
+                ],
+              ),
       ),
     );
   }
 }
+

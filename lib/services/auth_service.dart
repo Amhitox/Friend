@@ -190,7 +190,7 @@ class AuthService {
     if (_isDemo) return true;
     try {
       // Also sign out of Google if applicable.
-      await GoogleSignIn().signOut().catchError((_) {});
+      await GoogleSignIn().signOut().catchError((_) => null);
       await _auth!.signOut();
       if (kDebugMode) {
         debugPrint('[AuthService] Signed out');

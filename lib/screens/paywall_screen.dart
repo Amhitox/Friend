@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:provider/provider.dart';
 
@@ -121,8 +120,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         });
         break;
 
-      default:
-        break;
+      // exhaustive cases handled above
     }
   }
 

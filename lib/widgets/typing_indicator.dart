@@ -1,9 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// An animated typing indicator with three bouncing dots and a Darija label.
+/// An animated typing indicator with three bouncing dots.
 ///
 /// Shown at the bottom of the chat list while the AI is composing a response.
 /// Each dot bounces with a staggered delay to create a wave effect.

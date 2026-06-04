@@ -1,6 +1,5 @@
-/// Barrel export for all Dostok custom widgets.
-///
-/// Usage: `import 'package:darija_friend/widgets/widgets.dart';`
+// Barrel export for all Dostok custom widgets.
+// Usage: `import 'package:darija_friend/widgets/widgets.dart';`
 export 'ad_banner.dart';
 export 'action_card.dart';
 export 'bottom_nav.dart';

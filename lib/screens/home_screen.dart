@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../theme/app_colors.dart';
 import '../widgets/bottom_nav.dart';
@@ -16,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.background,
       body: const _HomeBody(),
       bottomNavigationBar: DostokBottomNav(
         currentIndex: _currentIndex,
@@ -42,545 +43,150 @@ class _HomeBody extends StatelessWidget {
     return 'Good Night';
   }
 
-  void _showToast(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: 'Cairo'),
-        ),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          // ── Header ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: AppColors.primaryContainer,
-                    child: const Icon(
-                      Icons.person_outline,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Welcome Back',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          _greeting(),
-                          style: const TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            height: 1.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Stack(
-                    children: [
-                      const Icon(
-                        Icons.notifications_outlined,
-                        color: AppColors.textSecondary,
-                        size: 24,
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 40),
+
+            // ── Greeting ──
+            Text(
+              _greeting(),
+              style: const TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+                height: 1.2,
               ),
             ),
-          ),
+            const SizedBox(height: 4),
+            const Text(
+              "I'm here whenever you need me.",
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
 
-          // ── Greeting ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-              child: Text(
-                'How can I help you?',
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+            const Spacer(),
+
+            // ── Orb ──
+            Center(
+              child: Container(
+                width: 160,
+                height: 160,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppColors.dreamyBg,
+                ),
+                child: Center(
+                  child: Text(
+                    'D',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      fontSize: 64,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary.withOpacity(0.9),
+                    ),
+                  ),
+                ),
+              )
+                  .animate(onPlay: (controller) => controller.repeat())
+                  .scale(
+                    begin: const Offset(1.0, 1.0),
+                    end: const Offset(1.05, 1.05),
+                    duration: 2400.ms,
+                    curve: Curves.easeInOut,
+                  )
+                  .then()
+                  .scale(
+                    begin: const Offset(1.05, 1.05),
+                    end: const Offset(1.0, 1.0),
+                    duration: 2400.ms,
+                    curve: Curves.easeInOut,
+                  ),
+            ),
+
+            const SizedBox(height: 48),
+
+            // ── Primary Action ──
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/chat'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  shadowColor: AppColors.primary.withOpacity(0.35),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.chat_bubble_outline, size: 20),
+                    SizedBox(width: 10),
+                    Text(
+                      'Chat with Dostok',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
 
-          // ── Action Cards Grid ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.9,
-                children: [
-                  _ActionCard(
-                    icon: Icons.chat_bubble_outline,
-                    title: 'Talk to AI',
-                    subtitle: "Let's try it now",
-                    buttonLabel: 'Start Talking',
-                    buttonFilled: true,
-                    onTap: () => Navigator.pushNamed(context, '/chat'),
-                  ),
-                  _ActionCard(
-                    icon: Icons.mic_none_outlined,
-                    title: 'Voice',
-                    subtitle: 'Voice to text',
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                  _ActionCard(
-                    icon: Icons.image_outlined,
-                    title: 'Image',
-                    subtitle: 'Image Generator',
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                  _ActionCard(
-                    icon: Icons.call_outlined,
-                    title: 'Call',
-                    subtitle: 'Voice call',
-                    onTap: () => Navigator.pushNamed(context, '/call'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+            const SizedBox(height: 16),
 
-          // ── Topics Section ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: Row(
-                children: [
-                  const Text(
-                    'Topics',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+            // ── Secondary Action ──
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/call'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.call_outlined,
+                      size: 18,
+                      color: AppColors.primary,
                     ),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/chat'),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      'See All',
+                    SizedBox(width: 8),
+                    Text(
+                      'Voice Call',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: AppColors.primary,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _TopicChip(
-                    label: 'Daily life',
-                    selected: true,
-                    onTap: () => Navigator.pushNamed(context, '/chat'),
-                  ),
-                  _TopicChip(
-                    label: 'Business',
-                    selected: false,
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                  _TopicChip(
-                    label: 'Health',
-                    selected: false,
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                  _TopicChip(
-                    label: 'Technology',
-                    selected: false,
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                  _TopicChip(
-                    label: 'Travel',
-                    selected: false,
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                  _TopicChip(
-                    label: 'Culture',
-                    selected: false,
-                    onTap: () => _showToast(context, 'Coming soon'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Content Cards ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-              child: Text(
-                'Featured',
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  ],
                 ),
               ),
             ),
-          ),
 
-          SliverList(
-            delegate: SliverChildListDelegate([
-              _ContentCard(
-                tag: 'Discover',
-                title: 'What is blood pressure?',
-                description:
-                    'Blood pressure measures the force of blood pushing against the walls of your arteries.',
-                onTap: () => Navigator.pushNamed(context, '/chat'),
-              ),
-              _ContentCard(
-                tag: 'Discover',
-                title: 'Why is sleep important?',
-                description:
-                    'Quality sleep helps repair the body, consolidate memory, and regulate hormones essential for health.',
-                onTap: () => Navigator.pushNamed(context, '/chat'),
-              ),
-              _ContentCard(
-                tag: 'New',
-                title: 'Healthy eating habits',
-                description:
-                    'Learn simple strategies to build nutritious meals and maintain a balanced diet every day.',
-                onTap: () => Navigator.pushNamed(context, '/chat'),
-              ),
-            ]),
-          ),
+            const Spacer(flex: 2),
 
-          const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Action Card
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ActionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String? buttonLabel;
-  final bool buttonFilled;
-  final VoidCallback? onTap;
-
-  const _ActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.buttonLabel,
-    this.buttonFilled = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icon, color: AppColors.primary, size: 24),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: buttonFilled ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
-                  border: buttonFilled
-                      ? null
-                      : Border.all(color: AppColors.primary, width: 1),
-                ),
-                child: buttonFilled
-                    ? Text(
-                        buttonLabel!,
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.arrow_forward,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Topic Chip
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _TopicChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  const _TopicChip({
-    required this.label,
-    required this.selected,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
-          child: Container(
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: selected ? AppColors.primary : AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Center(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: selected ? Colors.white : AppColors.primary,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Content Card
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ContentCard extends StatelessWidget {
-  final String tag;
-  final String title;
-  final String description;
-  final VoidCallback? onTap;
-
-  const _ContentCard({
-    required this.tag,
-    required this.title,
-    required this.description,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    tag,
-                    style: const TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.primary, width: 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Discover',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+            const SizedBox(height: 80),
+          ],
         ),
       ),
     );

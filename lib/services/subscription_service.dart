@@ -603,8 +603,7 @@ class SubscriptionService extends ChangeNotifier {
         notifyListeners();
         break;
 
-      default:
-        break;
+      // exhaustive cases handled above
     }
   }
 

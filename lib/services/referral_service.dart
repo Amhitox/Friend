@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,7 +12,6 @@ import 'package:flutter/foundation.dart';
 /// - Referred: 7 days free trial
 class ReferralService {
   static const String _referralCodeKey = 'user_referral_code';
-  static const String _referralCountKey = 'referral_count';
   static const int _referrerRewardDays = 3;
   static const int _referredRewardDays = 7;
   static const String _codePrefix = 'DOSTOK';

@@ -1,36 +1,26 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-/// A voice waveform visualization widget for the Dostok app.
+import 'package:flutter/material.dart';
+
+/// A simplified voice waveform visualization widget for the Dostok app.
 ///
 /// Displays a row of animated bars with varying heights to represent
-/// audio input. Creates an organic, random-ish animation feel.
+/// audio input.
 ///
 /// Usage:
 /// ```dart
 /// VoiceWaveform(
 ///   isActive: true,
 ///   barCount: 5,
-///   color: Colors.teal,
+///   color: AppColors.primary,
 /// )
 /// ```
 class VoiceWaveform extends StatefulWidget {
-  /// Whether the waveform animation is active.
   final bool isActive;
-
-  /// Number of bars to display.
   final int barCount;
-
-  /// Color of the bars.
   final Color? color;
-
-  /// Height of the waveform container.
   final double height;
-
-  /// Width of each bar.
   final double barWidth;
-
-  /// Spacing between bars.
   final double spacing;
 
   const VoiceWaveform({
@@ -103,14 +93,10 @@ class _VoiceWaveformState extends State<VoiceWaveform>
   @override
   void didUpdateWidget(VoiceWaveform oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    // Handle bar count changes
     if (widget.barCount != oldWidget.barCount) {
       _disposeControllers();
       _initializeAnimations();
     }
-
-    // Handle active state changes
     if (widget.isActive && !oldWidget.isActive) {
       _startAnimations();
     } else if (!widget.isActive && oldWidget.isActive) {
@@ -148,7 +134,6 @@ class _VoiceWaveformState extends State<VoiceWaveform>
     );
   }
 
-  /// Builds a single animated bar in the waveform.
   Widget _buildAnimatedBar(int index, Color color) {
     return AnimatedBuilder(
       animation: _animations[index],

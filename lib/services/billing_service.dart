@@ -385,12 +385,7 @@ class BillingService {
         }
         break;
 
-      default:
-        dev.log(
-          'Unknown purchase status for ${purchase.productID}: ${purchase.status}',
-          name: _tag,
-        );
-        break;
+      // exhaustive cases handled above
     }
 
     _purchaseInProgress = false;
