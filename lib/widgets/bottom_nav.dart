@@ -35,14 +35,14 @@ class DostokBottomNav extends StatelessWidget {
       children: [
         Container(
           height: 72,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: Color(0x1A7C6BF5),
+                color: AppColors.primary.withValues(alpha: 0.15),
                 blurRadius: 20,
-                offset: Offset(0, -4),
+                offset: const Offset(0, -4),
                 spreadRadius: -4,
               ),
             ],

@@ -1126,8 +1126,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
           const Gap(10),
           Expanded(
             child: Text(
-              _errorMessage!,
-              style: TextStyle(fontFamily: 'Cairo', 
+              _errorMessage ?? '',
+              style: TextStyle(fontFamily: 'Cairo',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.error,

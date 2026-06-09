@@ -20,6 +20,7 @@ class ProfileScreen extends StatelessWidget {
     final themeProv = context.watch<ThemeProvider>();
 
     final profile = userProv.currentUser;
+    final avatarPath = profile?.avatarPath;
     final name = userProv.displayName;
     final daysActive = profile?.daysActive ?? 0;
     final totalMessages = profile?.totalMessages ?? 0;
@@ -48,9 +49,9 @@ class ProfileScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 52,
                       backgroundColor: theme.colorScheme.primaryContainer,
-                      child: profile?.avatarPath != null
+                      child: avatarPath != null
                           ? ClipOval(
-                              child: Image.asset(profile!.avatarPath!,
+                              child: Image.asset(avatarPath,
                                   fit: BoxFit.cover,
                                   width: 104,
                                   height: 104),

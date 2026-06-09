@@ -1,0 +1,36 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: b24b73d8-ac3f-422b-b06e-46713a9b70c5
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:20:51+01:00"
+    checksum: 79cdf3d47692bd9d30a0348dce7a73b13f667c8d580817c6c247530a497b3aa3
+test:
+    metadata:
+        name: Onboarding Flow
+        platform: android
+        tags:
+            - smoke
+            - onboarding
+    build:
+        name: darija_friend android
+    blocks:
+        - type: instructions
+          step_description: Wait for the onboarding screen to fully load with the animated orb visible
+        - type: validation
+          step_description: The onboarding screen is displayed with a welcome message about Dostok
+        - type: instructions
+          step_description: Swipe left to go to the second page of onboarding
+        - type: validation
+          step_description: A text field asking for the user's name is visible
+        - type: instructions
+          step_description: Tap the 'Let's go' button without entering a name
+        - type: validation
+          step_description: A validation error or shake animation appears on the name field
+        - type: instructions
+          step_description: Tap on the name text field and type 'TestUser'
+        - type: instructions
+          step_description: Tap the 'Let's go' button
+        - type: validation
+          step_description: The app navigates to the home screen showing a greeting with 'TestUser'

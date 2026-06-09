@@ -1,0 +1,44 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 41337b21-03cb-4d16-aaf5-9c07f5d9ba23
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:21:59+01:00"
+    checksum: b9e8ef89fc62f92db8e97aa2cfdf357b6588d3d39bfd36edc2488bc309425595
+test:
+    metadata:
+        name: Home to Chat and Back
+        platform: android
+        tags:
+            - navigation
+            - regression
+    build:
+        name: darija_friend android
+    blocks:
+        - type: validation
+          step_description: The home screen is visible
+        - type: instructions
+          step_description: Tap the 'Chat Now!' button
+        - type: validation
+          step_description: The chat screen opens
+        - type: instructions
+          step_description: Tap the back button to go back
+        - type: validation
+          step_description: The home screen is visible again with the same greeting
+        - type: instructions
+          step_description: Tap the settings gear icon in the top-right
+        - type: validation
+          step_description: The settings screen is displayed
+        - type: instructions
+          step_description: Tap the back button to go back
+        - type: validation
+          step_description: The home screen is visible again
+        - type: instructions
+          step_description: Tap the 'Daily Check-in' card
+        - type: validation
+          step_description: The daily check-in screen is displayed
+        - type: instructions
+          step_description: Tap the back button to go back
+        - type: validation
+          step_description: The home screen is visible again

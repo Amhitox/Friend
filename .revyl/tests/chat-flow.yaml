@@ -1,0 +1,44 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 646203e0-eafa-4612-a5d8-4cd73f0d2ef4
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:21:15+01:00"
+    checksum: b42b00b02b64683a152cf0ceb43cef8051c58c9ed529728c738054cd53036b75
+test:
+    metadata:
+        name: Chat Flow
+        platform: android
+        tags:
+            - smoke
+            - chat
+    build:
+        name: darija_friend android
+    blocks:
+        - type: instructions
+          step_description: Tap the 'Chat Now!' button on the home screen
+        - type: validation
+          step_description: The chat screen is displayed with the app bar showing 'Dostok'
+        - type: validation
+          step_description: An empty state with waving hand emoji and 'Hi! I'm Dostok' text is visible
+        - type: validation
+          step_description: 'Suggestion chips are visible: ''How are you?'', ''What can you do?'', ''Chat with me'''
+        - type: instructions
+          step_description: Tap the 'How are you?' suggestion chip
+        - type: validation
+          step_description: A user message bubble with 'How are you?' appears in the chat
+        - type: validation
+          step_description: A typing indicator with animated dots appears after sending the message
+        - type: instructions
+          step_description: Wait for the AI response to finish typing
+        - type: validation
+          step_description: A response message from Dostok appears in the chat
+        - type: instructions
+          step_description: Type 'Hello Dostok, this is a test message' in the text input field
+        - type: validation
+          step_description: A send button appears when text is entered
+        - type: instructions
+          step_description: Tap the send button
+        - type: validation
+          step_description: The message 'Hello Dostok, this is a test message' appears as a user bubble

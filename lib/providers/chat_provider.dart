@@ -66,27 +66,44 @@ class ChatProvider extends ChangeNotifier {
 
       if (raw != null && raw is List) {
         _messages = raw.map((item) {
-          if (item is Map) {
-            return Message(
-              id: item['id'] as String? ?? _uuid.v4(),
-              content: item['content'] as String? ?? '',
-              isFromUser: item['isFromUser'] as bool? ?? false,
-              timestamp: item['timestamp'] is DateTime
-                  ? item['timestamp'] as DateTime
-                  : DateTime.tryParse(item['timestamp']?.toString() ?? '') ??
-                      DateTime.now(),
-              type: MessageType.values.firstWhere(
-                (t) => t.name == item['type'],
-                orElse: () => MessageType.text,
-              ),
-              audioPath: item['audioPath'] as String?,
-              isRead: item['isRead'] as bool? ?? false,
-            );
+          try {
+            if (item is Map) {
+              return Message(
+                id: item['id'] as String? ?? _uuid.v4(),
+                content: item['content'] as String? ?? '',
+                isFromUser: item['isFromUser'] as bool? ?? false,
+                timestamp: () {
+                  final raw = item['timestamp'];
+                  if (raw is DateTime) return raw;
+                  if (raw == null) return DateTime.now();
+                  final parsed = DateTime.tryParse(raw.toString());
+                  return parsed ?? DateTime.now();
+                }(),
+                type: MessageType.values.firstWhere(
+                  (t) => t.name == item['type'],
+                  orElse: () => MessageType.text,
+                ),
+                audioPath: item['audioPath'] as String?,
+                isRead: item['isRead'] as bool? ?? false,
+              );
+            }
+            // If the object is already a deserialized Message (via Hive adapter).
+            if (item is Message) {
+              try {
+                // Force runtime validation of non-nullable fields
+                final _ = item.id + item.content + item.timestamp.toIso8601String();
+                return item;
+              } catch (e) {
+                dev.log("Corrupted Hive message skipped: $e");
+                return null;
+              }
+            }
+            throw FormatException('Cannot deserialize message: $item');
+          } catch (e, st) {
+            dev.log('ChatProvider.loadMessages: single message failed', error: e, stackTrace: st);
+            return null;
           }
-          // If the object is already a deserialized Message (via Hive adapter).
-          if (item is Message) return item;
-          throw FormatException('Cannot deserialize message: $item');
-        }).toList();
+        }).where((m) => m != null).cast<Message>().toList();
       }
     } catch (e, st) {
       dev.log('ChatProvider.loadMessages failed', error: e, stackTrace: st);
@@ -275,14 +292,14 @@ class ChatProvider extends ChangeNotifier {
   /// Returns a random canned Darija response for demo mode.
   String _getDemoResponse() {
     final responses = [
-      'Ahlan! Ana Dostok, sadiqek. Kifach n3awnek l-youm?',
-      'Safi, fhemtek! Chno bghiti nzidou?',
-      'Mzyan bzzaf! Kanbghi nhsdr m3ak darija.',
-      'Hada mzyan! Jrb tani, ghadi yzid yji mzyan.',
-      'Waxxa sadiq, ana hna m3ak. Gouliya chno bghiti!',
-      'Lah y3tik ssa7a! Jrb ntmarnaw m3a b3d.',
-      'Ah, hadchi bzzaf interesting! Zid koul li 3andek.',
-      'Safi safi, koulchi mzyan. Ana m3ak f kol wa9t!',
+      "Hey! I'm Dostok, your companion. How's your day going?",
+      'Got it! What would you like to talk about next?',
+      'That sounds great! I love chatting with you.',
+      'Nice! Keep going, you\'re doing awesome.',
+      'No worries, I\'m here for you. Tell me what\'s on your mind!',
+      'Bless you! Let\'s practice together.',
+      'Ah, that\'s so interesting! Tell me more.',
+      'Alright, everything\'s good. I\'m with you always!',
     ];
     return responses[Random().nextInt(responses.length)];
   }
@@ -310,14 +327,19 @@ class ChatProvider extends ChangeNotifier {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'messages': contextMessages,
-            'language': 'darija',
+            'language': 'english',
           }),
         )
         .timeout(const Duration(seconds: 30));
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return data['response'] as String? ?? '...';
+      if (response.body.isEmpty) return '...';
+      try {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return data['response'] as String? ?? '...';
+      } catch (e) {
+        return '...';
+      }
     } else {
       throw Exception('API error ${response.statusCode}: ${response.body}');
     }
@@ -327,7 +349,7 @@ class ChatProvider extends ChangeNotifier {
   Future<void> _persistMessage(Message message) async {
     try {
       final box = await Hive.openBox(_boxName);
-      final List<dynamic> existing = (box.get(_messagesKey) as List?) ?? [];
+      final List<dynamic> existing = (box.get(_messagesKey) as List<dynamic>?) ?? [];
       existing.add({
         'id': message.id,
         'content': message.content,

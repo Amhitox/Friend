@@ -137,6 +137,7 @@ class UserProvider extends ChangeNotifier {
     String? avatarPath,
   }) async {
     if (_currentUser == null) return;
+    final user = _currentUser!;
 
     // Clamp levels to valid ranges.
     int? clamp(int? value, int min, int max) {
@@ -144,7 +145,7 @@ class UserProvider extends ChangeNotifier {
       return value.clamp(min, max);
     }
 
-    _currentUser = _currentUser!.copyWith(
+    _currentUser = user.copyWith(
       name: name?.trim(),
       preferredLanguage: preferredLanguage,
       humorLevel: clamp(humorLevel, 0, 10),
@@ -163,14 +164,15 @@ class UserProvider extends ChangeNotifier {
   /// increases by 1 for every 10 messages (up to a max of 100).
   Future<void> incrementMessages() async {
     if (_currentUser == null) return;
+    final user = _currentUser!;
 
-    final newTotal = _currentUser!.totalMessages + 1;
+    final newTotal = user.totalMessages + 1;
     final newRelationship =
-        (newTotal % 10 == 0 && _currentUser!.relationshipLevel < 100)
-            ? _currentUser!.relationshipLevel + 1
-            : _currentUser!.relationshipLevel;
+        (newTotal % 10 == 0 && user.relationshipLevel < 100)
+            ? user.relationshipLevel + 1
+            : user.relationshipLevel;
 
-    _currentUser = _currentUser!.copyWith(
+    _currentUser = user.copyWith(
       totalMessages: newTotal,
       relationshipLevel: newRelationship,
     );
@@ -185,6 +187,7 @@ class UserProvider extends ChangeNotifier {
   /// to avoid double-counting.
   Future<void> trackDailyActive() async {
     if (_currentUser == null) return;
+    final user = _currentUser!;
 
     try {
       final box = await Hive.openBox(_boxName);
@@ -204,8 +207,8 @@ class UserProvider extends ChangeNotifier {
         }
       }
 
-      _currentUser = _currentUser!.copyWith(
-        daysActive: _currentUser!.daysActive + 1,
+      _currentUser = user.copyWith(
+        daysActive: user.daysActive + 1,
       );
       notifyListeners();
 
@@ -238,21 +241,21 @@ class UserProvider extends ChangeNotifier {
   /// Persists the current profile to Hive.
   Future<void> _persistProfile() async {
     if (_currentUser == null) return;
+    final user = _currentUser!;
 
     try {
       final box = await Hive.openBox(_boxName);
       await box.put(_profileKey, {
-        'name': _currentUser!.name,
-        'preferredLanguage': _currentUser!.preferredLanguage.name,
-        'humorLevel': _currentUser!.humorLevel,
-        'empathyLevel': _currentUser!.empathyLevel,
-        'formalityLevel': _currentUser!.formalityLevel,
-        'relationshipLevel': _currentUser!.relationshipLevel,
-        'totalMessages': _currentUser!.totalMessages,
-        'daysActive': _currentUser!.daysActive,
-        'firstInteractionDate':
-            _currentUser!.firstInteractionDate.toIso8601String(),
-        'avatarPath': _currentUser!.avatarPath,
+        'name': user.name,
+        'preferredLanguage': user.preferredLanguage.name,
+        'humorLevel': user.humorLevel,
+        'empathyLevel': user.empathyLevel,
+        'formalityLevel': user.formalityLevel,
+        'relationshipLevel': user.relationshipLevel,
+        'totalMessages': user.totalMessages,
+        'daysActive': user.daysActive,
+        'firstInteractionDate': user.firstInteractionDate.toIso8601String(),
+        'avatarPath': user.avatarPath,
       });
     } catch (e, st) {
       dev.log('UserProvider._persistProfile failed', error: e, stackTrace: st);

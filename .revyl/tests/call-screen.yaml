@@ -1,0 +1,52 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: dcbc1a53-0b9c-4886-9f00-cf45b26e7f56
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:21:37+01:00"
+    checksum: 81e1a11702d989e8275713b839cd5fd0a1e76478a7fc7bda6934f6355c10a20f
+test:
+    metadata:
+        name: Call Screen
+        platform: android
+        tags:
+            - call
+            - smoke
+    build:
+        name: darija_friend android
+    blocks:
+        - type: instructions
+          step_description: Navigate back to the home screen if not already there
+        - type: instructions
+          step_description: Tap the 'Voice Call' card on the home screen
+        - type: validation
+          step_description: The call screen is displayed with an animated orb
+        - type: validation
+          step_description: A 'Calling...' or 'Connecting' text is visible
+        - type: instructions
+          step_description: Wait for the call to connect
+        - type: validation
+          step_description: The call status shows 'On a call' or connected state
+        - type: validation
+          step_description: A mute button is visible on the call screen
+        - type: validation
+          step_description: A speaker button is visible on the call screen
+        - type: validation
+          step_description: An end call button is visible
+        - type: validation
+          step_description: A call duration timer is visible and counting
+        - type: instructions
+          step_description: Tap the mute button
+        - type: validation
+          step_description: The call status text changes to indicate muted state
+        - type: instructions
+          step_description: Tap the mute button again to unmute
+        - type: instructions
+          step_description: Tap the end call button
+        - type: validation
+          step_description: The call ended summary screen appears with duration information
+        - type: validation
+          step_description: A 'Call Again' button is visible
+        - type: validation
+          step_description: A 'Back' button is visible

@@ -1,0 +1,40 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 4a6a70ed-8215-4d68-bbe5-426dd8f63211
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:21:26+01:00"
+    checksum: 1f78a003126cb60399df0c098a436afc3eee9b9d21587df0c3e9420930e5ac8d
+test:
+    metadata:
+        name: Chat Menu Options
+        platform: android
+        tags:
+            - chat
+            - menu
+    build:
+        name: darija_friend android
+    blocks:
+        - type: instructions
+          step_description: Navigate to the chat screen
+        - type: instructions
+          step_description: Tap the three-dot menu icon in the top-right of the chat app bar
+        - type: validation
+          step_description: A bottom sheet appears with menu options
+        - type: validation
+          step_description: The menu contains 'Call Dostok' option
+        - type: validation
+          step_description: The menu contains 'Clear chat' option
+        - type: validation
+          step_description: The menu contains 'About Dostok' option
+        - type: instructions
+          step_description: Tap 'About Dostok'
+        - type: validation
+          step_description: A dialog or screen with version information about Dostok appears
+        - type: instructions
+          step_description: Close the About dialog and tap the three-dot menu again
+        - type: instructions
+          step_description: Tap 'Call Dostok'
+        - type: validation
+          step_description: The app navigates to the call screen

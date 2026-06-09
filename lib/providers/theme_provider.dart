@@ -35,7 +35,8 @@ class ThemeProvider extends ChangeNotifier {
   /// Falls back to [ThemeMode.light] if no preference is stored.
   Future<void> loadTheme() async {
     try {
-      final box = await Hive.openBox(_boxName);
+      if (!Hive.isBoxOpen(_boxName)) return;
+      final box = Hive.box(_boxName);
       final stored = box.get(_themeModeKey) as String?;
 
       if (stored != null) {
@@ -94,7 +95,8 @@ class ThemeProvider extends ChangeNotifier {
   /// Persists the current theme mode to Hive.
   Future<void> _persistTheme() async {
     try {
-      final box = await Hive.openBox(_boxName);
+      if (!Hive.isBoxOpen(_boxName)) return;
+      final box = Hive.box(_boxName);
       await box.put(_themeModeKey, _themeMode.name);
     } catch (e, st) {
       dev.log('ThemeProvider._persistTheme failed', error: e, stackTrace: st);

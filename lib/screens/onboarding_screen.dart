@@ -157,16 +157,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   // Ambient Particles
   // ─────────────────────────────────────────────
   Widget _buildParticles() {
-    return Stack(
-      children: const [
-        _FloatingParticle(initialTop: 0.12, initialLeft: 0.15, size: 6, drift: 1.2),
-        _FloatingParticle(initialTop: 0.25, initialLeft: 0.78, size: 5, drift: 0.9),
-        _FloatingParticle(initialTop: 0.45, initialLeft: 0.10, size: 7, drift: 1.5),
-        _FloatingParticle(initialTop: 0.55, initialLeft: 0.85, size: 4, drift: 1.1),
-        _FloatingParticle(initialTop: 0.70, initialLeft: 0.22, size: 6, drift: 0.8),
-        _FloatingParticle(initialTop: 0.82, initialLeft: 0.68, size: 5, drift: 1.3),
-        _FloatingParticle(initialTop: 0.35, initialLeft: 0.55, size: 4, drift: 1.0),
-        _FloatingParticle(initialTop: 0.90, initialLeft: 0.45, size: 6, drift: 1.4),
+    return const Stack(
+      children: [
+        _FloatingParticle(initialTop: 0.15, initialLeft: 0.20, size: 5, drift: 1.0),
+        _FloatingParticle(initialTop: 0.45, initialLeft: 0.75, size: 4, drift: 0.8),
+        _FloatingParticle(initialTop: 0.70, initialLeft: 0.30, size: 5, drift: 1.2),
+        _FloatingParticle(initialTop: 0.85, initialLeft: 0.65, size: 4, drift: 0.9),
       ],
     );
   }
@@ -193,15 +189,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               height: 1.4,
             ),
             textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(delay: 200.ms, duration: 900.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.2,
-                  end: 0,
-                  delay: 200.ms,
-                  duration: 900.ms,
-                  curve: Curves.easeOutCubic),
+          ),
           const Gap(6),
           Text(
             "I'm Dostok",
@@ -213,15 +201,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               height: 1.2,
             ),
             textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(delay: 600.ms, duration: 900.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.2,
-                  end: 0,
-                  delay: 600.ms,
-                  duration: 900.ms,
-                  curve: Curves.easeOutCubic),
+          ),
           const Gap(16),
           // Warm two-line text with heart
           Column(
@@ -242,10 +222,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 Icons.favorite,
                 size: 14,
                 color: AppColors.primary,
-              )
-                  .animate()
-                  .fadeIn(delay: 1100.ms, duration: 400.ms)
-                  .scale(begin: const Offset(0.0, 0.0), end: const Offset(1.0, 1.0), delay: 1100.ms, duration: 400.ms),
+              ),
               const Gap(6),
               Text(
                 'late nights, and quiet moments.',
@@ -259,15 +236,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 textAlign: TextAlign.center,
               ),
             ],
-          )
-              .animate()
-              .fadeIn(delay: 900.ms, duration: 900.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.2,
-                  end: 0,
-                  delay: 900.ms,
-                  duration: 900.ms,
-                  curve: Curves.easeOutCubic),
+          ),
           const Gap(20),
           // Page indicator dots
           Row(
@@ -293,7 +262,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ],
           )
               .animate()
-              .fadeIn(delay: 1300.ms, duration: 600.ms),
+              .fadeIn(delay: 300.ms, duration: 600.ms),
           const Spacer(),
           _buildContinueCue(),
           const Gap(24),
@@ -328,7 +297,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ),
     )
         .animate()
-        .fadeIn(delay: 1400.ms, duration: 700.ms);
+        .fadeIn(delay: 400.ms, duration: 700.ms);
   }
 
   // ─────────────────────────────────────────────
@@ -358,15 +327,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               height: 1.3,
             ),
             textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(delay: 100.ms, duration: 700.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.2,
-                  end: 0,
-                  delay: 100.ms,
-                  duration: 700.ms,
-                  curve: Curves.easeOutCubic),
+          ),
           const Gap(8),
           Text(
             'You can use a nickname or your real name.',
@@ -378,35 +339,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               height: 1.4,
             ),
             textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(delay: 300.ms, duration: 700.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.15,
-                  end: 0,
-                  delay: 300.ms,
-                  duration: 700.ms,
-                  curve: Curves.easeOutCubic),
+          ),
           const Gap(32),
-          _buildNameField()
-              .animate()
-              .fadeIn(delay: 500.ms, duration: 700.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.2,
-                  end: 0,
-                  delay: 500.ms,
-                  duration: 700.ms,
-                  curve: Curves.easeOutCubic),
+          _buildNameField(),
           const Gap(20),
-          _buildLetsGoButton()
-              .animate()
-              .fadeIn(delay: 700.ms, duration: 600.ms, curve: Curves.easeOut)
-              .slideY(
-                  begin: 0.15,
-                  end: 0,
-                  delay: 700.ms,
-                  duration: 600.ms,
-                  curve: Curves.easeOutCubic),
+          _buildLetsGoButton(),
           const Spacer(),
           Text(
             'This is just between us 💜',
@@ -417,9 +354,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               color: AppColors.textSecondary.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
-          )
-              .animate()
-              .fadeIn(delay: 900.ms, duration: 600.ms),
+          ),
         ],
       ),
     );
@@ -653,15 +588,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
         );
       },
-    )
-        .animate()
-        .fadeIn(duration: 900.ms)
-        .scale(
-          begin: const Offset(0.7, 0.7),
-          end: const Offset(1.0, 1.0),
-          duration: 900.ms,
-          curve: Curves.easeOutBack,
-        );
+    );
   }
 
   Widget _buildSmallOrb(double keyboardInset) {
@@ -772,9 +699,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           );
         },
       ),
-    )
-        .animate()
-        .fadeIn(duration: 700.ms);
+    );
   }
 
   // ─────────────────────────────────────────────
@@ -859,7 +784,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         if (_nameError != null) ...[
           const Gap(8),
           Text(
-            _nameError!,
+            _nameError ?? '',
             style: const TextStyle(
               fontFamily: 'Cairo',
               fontSize: 13,
@@ -867,8 +792,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               color: AppColors.error,
             ),
           )
-              .animate()
-              .fadeIn(duration: 250.ms)
+              .animate(target: 1)
               .shake(hz: 4, duration: 350.ms),
         ],
       ],
@@ -962,7 +886,7 @@ class _FloatingParticleState extends State<_FloatingParticle>
         final t = _controller.value;
         final driftX = math.sin(t * 2 * math.pi * widget.drift) * 12;
         final driftY = -t * 40; // float upward slowly
-        final fade = 0.15 + 0.10 * math.sin(t * 2 * math.pi);
+        final fade = 0.06 + 0.02 * math.sin(t * 2 * math.pi);
 
         return Positioned(
           top: MediaQuery.of(context).size.height * widget.initialTop + driftY,
@@ -972,7 +896,7 @@ class _FloatingParticleState extends State<_FloatingParticle>
             height: widget.size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: fade.clamp(0.12, 0.25)),
+              color: Colors.white.withValues(alpha: fade.clamp(0.04, 0.08)),
             ),
           ),
         );

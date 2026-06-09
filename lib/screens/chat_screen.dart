@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
@@ -276,11 +277,31 @@ class _ChatScreenState extends State<ChatScreen>
           Expanded(
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, _) {
-                if (chatProvider.messageCount > _previousMessageCount) {
-                  _previousMessageCount = chatProvider.messageCount;
-                  _scrollToBottom();
+                try {
+                  if (chatProvider.messageCount == 0 && _previousMessageCount > 0) {
+                    _previousMessageCount = 0;
+                  }
+                  if (chatProvider.messageCount > _previousMessageCount) {
+                    _previousMessageCount = chatProvider.messageCount;
+                    _scrollToBottom();
+                  }
+                  return _buildChatBody(chatProvider);
+                } catch (e, st) {
+                  debugPrint('Chat body build error: $e\n$st');
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Something went wrong loading chat.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
                 }
-                return _buildChatBody(chatProvider);
               },
             ),
           ),
@@ -428,31 +449,65 @@ class _ChatScreenState extends State<ChatScreen>
           return const _TypingIndicatorBubble();
         }
 
-        final message = messages[index];
-        final showDate = index == 0 ||
-            !_isSameDay(message.timestamp, messages[index - 1].timestamp);
-        final showSenderInfo = !message.isFromUser &&
-            (index == 0 || messages[index - 1].isFromUser);
+        try {
+          final message = messages[index];
+          if (message.id.isEmpty) return const SizedBox.shrink();
 
-        return Column(
-          children: [
-            if (showDate) _buildDateSeparator(message.timestamp),
-            _MessageBubble(
-              message: message,
-              showSenderInfo: showSenderInfo,
-            ).animate().fadeIn(duration: 250.ms).slideY(
-                  begin: 0.06,
-                  end: 0,
-                  duration: 250.ms,
-                  curve: Curves.easeOutCubic,
-                ),
-          ],
-        );
+          // Defensive: Hive adapters bypass constructors, fields can be null at runtime.
+          DateTime? timestamp;
+          try {
+            timestamp = message.timestamp;
+          } catch (_) {
+            timestamp = null;
+          }
+
+          bool sameDay = false;
+          if (index > 0 && messages.length > 1) {
+            final prev = messages[index - 1];
+            sameDay = _isSameDay(timestamp, prev.timestamp);
+          }
+          final showDate = index == 0 || !sameDay;
+          final showSenderInfo = !message.isFromUser &&
+              (index == 0 || messages[index - 1].isFromUser);
+
+          return Column(
+            children: [
+              if (showDate) _buildDateSeparator(timestamp),
+              _MessageBubble(
+                message: message,
+                showSenderInfo: showSenderInfo,
+              ).animate().fadeIn(duration: 250.ms).slideY(
+                    begin: 0.06,
+                    end: 0,
+                    duration: 250.ms,
+                    curve: Curves.easeOutCubic,
+                  ),
+            ],
+          );
+        } catch (e) {
+          debugPrint("Message render error: $e");
+          if (kDebugMode) {
+            return Container(
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.red.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Render error: $e',
+                style: TextStyle(color: Colors.red.shade900, fontSize: 12),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        }
       },
     );
   }
 
-  Widget _buildDateSeparator(DateTime date) {
+  Widget _buildDateSeparator(DateTime? date) {
+    if (date == null) return const SizedBox.shrink();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDay = DateTime(date.year, date.month, date.day);
@@ -487,8 +542,10 @@ class _ChatScreenState extends State<ChatScreen>
     );
   }
 
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
+  bool _isSameDay(DateTime? a, DateTime? b) {
+    if (a == null || b == null) return false;
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
 
   Widget _buildEmptyState() {
     return Center(
@@ -646,13 +703,13 @@ class _ChatScreenState extends State<ChatScreen>
 
   Widget _buildInputArea() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Color(0x0A000000),
             blurRadius: 20,
@@ -690,7 +747,7 @@ class _ChatScreenState extends State<ChatScreen>
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 120),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F3FF),
+                    color: AppColors.primaryContainer,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: TextField(
@@ -699,22 +756,24 @@ class _ChatScreenState extends State<ChatScreen>
                     maxLines: 5,
                     minLines: 1,
                     textInputAction: TextInputAction.newline,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textPrimary,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Type a message...',
                       hintStyle: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textSecondary,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,
                       ),
@@ -789,19 +848,37 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (message.type == MessageType.system) {
-      return _buildSystemBubble();
-    }
+    try {
+      if (message.type == MessageType.system) {
+        return _buildSystemBubble();
+      }
 
-    if (message.type == MessageType.audio || message.audioPath != null) {
-      return _buildVoiceBubble(context);
-    }
+      if (message.type == MessageType.audio || message.audioPath != null) {
+        return _buildVoiceBubble(context);
+      }
 
-    return _buildTextBubble(context);
+      return _buildTextBubble(context);
+    } catch (e, st) {
+      debugPrint('MessageBubble build error: $e\n$st');
+      return const SizedBox.shrink();
+    }
   }
 
   Widget _buildTextBubble(BuildContext context) {
-    final isUser = message.isFromUser;
+    // Defensive: Hive adapters bypass constructors, fields can be null at runtime.
+    String content;
+    bool isUser;
+    DateTime? timestamp;
+    try {
+      content = message.content;
+      isUser = message.isFromUser;
+      timestamp = message.timestamp;
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
+    if (content.isEmpty && message.type != MessageType.audio) {
+      return const SizedBox.shrink();
+    }
     final maxWidth = MediaQuery.of(context).size.width * 0.75;
 
     return Align(
@@ -878,7 +955,7 @@ class _MessageBubble extends StatelessWidget {
                 ],
               ),
               child: Text(
-                message.content,
+                content,
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 14,
@@ -894,7 +971,7 @@ class _MessageBubble extends StatelessWidget {
                 right: isUser ? 12 : 0,
               ),
               child: Text(
-                _formatTime(message.timestamp),
+                _formatTime(timestamp),
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 10,
@@ -912,7 +989,14 @@ class _MessageBubble extends StatelessWidget {
   }
 
   Widget _buildVoiceBubble(BuildContext context) {
-    final isUser = message.isFromUser;
+    bool isUser;
+    DateTime? timestamp;
+    try {
+      isUser = message.isFromUser;
+      timestamp = message.timestamp;
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
     final maxWidth = MediaQuery.of(context).size.width * 0.75;
 
     return Align(
@@ -1011,7 +1095,7 @@ class _MessageBubble extends StatelessWidget {
                   _VoiceWaveform(isUser: isUser),
                   const Gap(8),
                   Text(
-                    '00:05',
+                    '0:00', // TODO: needs real duration from audio player
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 12,
@@ -1029,7 +1113,7 @@ class _MessageBubble extends StatelessWidget {
                 right: isUser ? 12 : 0,
               ),
               child: Text(
-                _formatTime(message.timestamp),
+                _formatTime(timestamp),
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 10,
@@ -1047,11 +1131,17 @@ class _MessageBubble extends StatelessWidget {
   }
 
   Widget _buildSystemBubble() {
+    String content;
+    try {
+      content = message.content;
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
     return Center(
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 32),
         child: Text(
-          message.content,
+          content,
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontFamily: 'Cairo',
@@ -1064,7 +1154,8 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dt) {
+  String _formatTime(DateTime? dt) {
+    if (dt == null) return '--';
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final minute = dt.minute.toString().padLeft(2, '0');
     final period = dt.hour >= 12 ? 'PM' : 'AM';

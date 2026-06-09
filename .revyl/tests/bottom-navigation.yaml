@@ -1,0 +1,38 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 4143b643-2b9d-4ca2-8bb2-b569042aecd2
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:21:48+01:00"
+    checksum: fb8b07f993e488a6a8ae24d2dc74638de57bf9842137479e8d80badc3ea12d4e
+test:
+    metadata:
+        name: Bottom Navigation
+        platform: android
+        tags:
+            - smoke
+            - navigation
+    build:
+        name: darija_friend android
+    blocks:
+        - type: validation
+          step_description: The bottom navigation bar is visible with Home, Daily, Chat, and Settings tabs
+        - type: validation
+          step_description: The Home tab is currently selected and highlighted
+        - type: instructions
+          step_description: Tap the Daily tab in the bottom navigation
+        - type: validation
+          step_description: The Daily screen is displayed
+        - type: instructions
+          step_description: Tap the Chat tab in the bottom navigation
+        - type: validation
+          step_description: The Chat screen is displayed
+        - type: instructions
+          step_description: Tap the Settings tab in the bottom navigation
+        - type: validation
+          step_description: The Settings screen is displayed
+        - type: instructions
+          step_description: Tap the Home tab in the bottom navigation
+        - type: validation
+          step_description: The Home screen is displayed with the greeting

@@ -220,6 +220,17 @@ Future<void> main() async {
       debugPrint('[main] Notification init failed (non-fatal): $e');
     }
 
+    // Load persisted theme before runApp so the first frame uses the correct mode.
+    final themeProvider = ThemeProvider();
+    try {
+      await themeProvider.loadTheme()
+          .timeout(const Duration(seconds: 2));
+      StartupLogger.log('ThemeProvider.loadTheme() done');
+    } catch (e, st) {
+      StartupLogger.log('Theme load failed: $e');
+      debugPrint('[main] Theme load failed (non-fatal): $e');
+    }
+
     // Set crash-context user info now that we know the UID.
     try {
       if (authService.uid != null) {
@@ -250,7 +261,7 @@ Future<void> main() async {
           ChangeNotifierProvider(create: (_) => ChatProvider()),
           ChangeNotifierProvider(create: (_) => CallProvider()),
           ChangeNotifierProvider(create: (_) => UserProvider()),
-          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider.value(value: themeProvider), // Pre-loaded so first frame has correct theme.
           ChangeNotifierProvider(create: (_) => DailyProvider()),
 
           // -- Monetization & infrastructure providers --

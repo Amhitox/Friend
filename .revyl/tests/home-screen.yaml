@@ -1,0 +1,32 @@
+# Revyl Test Definition
+
+_meta:
+    remote_id: 96e8ec35-7f69-4d19-9ced-b60ad654a2c4
+    remote_version: 1
+    local_version: 1
+    last_synced_at: "2026-06-05T12:21:02+01:00"
+    checksum: 19c146d1591a5f0fec12b0d81b632a18ae71011adb8f02d91f5804f939043917
+test:
+    metadata:
+        name: Home Screen
+        platform: android
+        tags:
+            - smoke
+            - home
+    build:
+        name: darija_friend android
+    blocks:
+        - type: validation
+          step_description: The home screen is visible with a time-based greeting
+        - type: validation
+          step_description: A motivational quote is displayed on the home screen
+        - type: validation
+          step_description: A 'Chat Now!' button is visible on the home screen
+        - type: validation
+          step_description: A 'Voice Call' card is visible on the home screen
+        - type: validation
+          step_description: A 'Daily Check-in' card is visible on the home screen
+        - type: validation
+          step_description: A 'Recent Conversation Preview' section is visible
+        - type: validation
+          step_description: A settings gear icon is visible in the top-right corner
