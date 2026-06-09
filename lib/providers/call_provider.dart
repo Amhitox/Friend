@@ -40,7 +40,6 @@ class CallProvider extends ChangeNotifier {
   String? _error;
 
   Timer? _durationTimer;
-  Timer? _connectingTimeout;
   DateTime? _callStartTime;
 
   // ---------------------------------------------------------------------------
@@ -85,48 +84,19 @@ class CallProvider extends ChangeNotifier {
   // Call lifecycle
   // ---------------------------------------------------------------------------
 
-  /// Initiates a new voice call with the AI.
-  ///
-  /// Transitions: idle/ended -> connecting -> active.
-  /// If connecting takes more than 10 seconds without transitioning to active,
-  /// the call is automatically ended with a timeout error.
-  Future<void> startCall() async {
-    if (isInCall) return;
+  Future<void> startCall() {
+    if (isInCall) return Future.value();
 
+    _durationTimer?.cancel();
     _error = null;
-    _currentState = CallState.connecting;
+    _currentState = CallState.active;
     _callDuration = Duration.zero;
     _isMuted = false;
-    _isSpeakerOn = false;
+    _isSpeakerOn = true;
+    _callStartTime = DateTime.now();
+    _startDurationTimer();
     notifyListeners();
-
-    try {
-      // Simulate connection delay (replace with real WebRTC / SIP setup).
-      _connectingTimeout = Timer(const Duration(seconds: 10), () {
-        if (_currentState == CallState.connecting) {
-          _error = 'Connection timed out. Please try again.';
-          endCall();
-        }
-      });
-
-      await Future.delayed(const Duration(seconds: 2));
-
-      // If the timeout already fired, bail out.
-      if (_currentState != CallState.connecting) return;
-
-      _connectingTimeout?.cancel();
-      _connectingTimeout = null;
-
-      _currentState = CallState.active;
-      _callStartTime = DateTime.now();
-      _startDurationTimer();
-      notifyListeners();
-    } catch (e, st) {
-      dev.log('CallProvider.startCall failed', error: e, stackTrace: st);
-      _error = 'Failed to connect. Please try again.';
-      _currentState = CallState.ended;
-      notifyListeners();
-    }
+    return Future.value();
   }
 
   /// Ends the current call and persists call statistics.
@@ -135,8 +105,6 @@ class CallProvider extends ChangeNotifier {
   Future<void> endCall() async {
     if (!isInCall) return;
 
-    _connectingTimeout?.cancel();
-    _connectingTimeout = null;
     _stopDurationTimer();
 
     _currentState = CallState.ended;
@@ -231,7 +199,6 @@ class CallProvider extends ChangeNotifier {
   @override
   void dispose() {
     _durationTimer?.cancel();
-    _connectingTimeout?.cancel();
     super.dispose();
   }
 }

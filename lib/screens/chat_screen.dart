@@ -802,10 +802,6 @@ class _ChatScreenState extends State<ChatScreen>
                 ),
               ),
               const Gap(8),
-              // NOTE: A Container/AnimatedContainer with `clipBehavior` set but
-              // no `decoration` throws "Null check operator used on a null
-              // value" in release builds (the assert is only active in debug).
-              // Use a ClipRect to clip the width animation instead.
               ClipRect(
                 child: AnimatedContainer(
                   width: _hasText ? 40 : 0,
@@ -1100,7 +1096,7 @@ class _MessageBubble extends StatelessWidget {
                   _VoiceWaveform(isUser: isUser),
                   const Gap(8),
                   Text(
-                    '0:00', // TODO: needs real duration from audio player
+                    '0:00',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 12,

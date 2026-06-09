@@ -35,7 +35,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   /// Whether microphone permission was granted.
   bool _micPermissionGranted = false;
 
-  /// Error message if permission was denied.
   String? _permissionError;
 
   // ---------------------------------------------------------------------------
@@ -66,10 +65,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     });
 
     if (granted) {
-      // Track call start with analytics.
       AnalyticsService().logCallStarted(callType: 'voice');
-
-      // Kick off the call — transitions connecting -> active via the provider.
       context.read<CallProvider>().startCall();
     }
   }
@@ -84,8 +80,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   void dispose() {
     _summaryFadeController.dispose();
 
-    // If the call is still active/connecting when the user navigates away,
-    // end it gracefully so stats are persisted.
     final provider = context.read<CallProvider>();
     if (provider.isInCall) {
       _recordCallUsage(provider);
@@ -118,7 +112,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Consumer<CallProvider>(
       builder: (context, call, _) {
-        // Trigger summary fade-in when the call ends.
         if (call.currentState == CallState.ended &&
             _summaryFadeController.status == AnimationStatus.dismissed) {
           _summaryFadeController.forward();
@@ -160,7 +153,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
           children: [
             Row(
               children: [
-                // Back arrow
                 IconButton(
                   onPressed: () {
                     if (call.isInCall) {
@@ -177,7 +169,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                   splashRadius: 24,
                 ),
                 const Spacer(),
-                // Title
                 const Text(
                   'Voice Chat',
                   style: TextStyle(
@@ -188,11 +179,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 const Spacer(),
-                // Menu icon
                 IconButton(
-                  onPressed: () {
-                    // Placeholder for future call settings / menu
-                  },
+                  onPressed: () {},
                   icon: const Icon(
                     Icons.more_vert,
                     color: AppColors.textPrimary,
@@ -210,17 +198,12 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
   /// Delegates to the correct sub-layout based on [CallProvider.currentState].
   Widget _buildBody(BuildContext context, CallProvider call) {
-    // Permission denied — show an error state instead of the call UI.
     if (!_micPermissionGranted) {
       return _buildPermissionDenied();
     }
 
     switch (call.currentState) {
       case CallState.idle:
-        // Self-heal: permission is granted but the call never kicked off
-        // (e.g. the OS permission dialog recreated the activity and
-        // _initCall bailed out on `!mounted`). Without this the screen would
-        // sit on "Calling..." forever because idle renders the connecting UI.
         if (_micPermissionGranted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
@@ -412,7 +395,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildTranscriptionArea(CallProvider call) {
-    // TODO: wire real STT transcript when available
     const String transcript = '';
     final bool hasText = transcript.isNotEmpty;
 
@@ -439,7 +421,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Mute & Speaker row
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -464,7 +445,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
           ],
         ),
         const SizedBox(height: 20),
-        // End call — prominent red
         _CircleControlButton(
           icon: Icons.call_end,
           size: 72,
@@ -502,7 +482,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              // Orb (static, smaller)
               const _LivingOrb(
                 size: 200,
                 isActive: false,
@@ -518,7 +497,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 ),
               ),
               const SizedBox(height: 12),
-              // Duration summary card
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
@@ -546,7 +524,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-              // Error message if call ended due to an error
               if (call.error != null) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -560,11 +537,9 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 ),
               ],
               const Spacer(flex: 2),
-              // Action buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Call again
                   _CircleIconLabelButton(
                     icon: Icons.call_rounded,
                     label: 'Call Again',
@@ -576,7 +551,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                     },
                   ),
                   const SizedBox(width: 40),
-                  // Go back
                   _CircleIconLabelButton(
                     icon: Icons.arrow_back_rounded,
                     label: 'Back',
@@ -673,9 +647,9 @@ class _LivingOrbState extends State<_LivingOrb>
               width: _orbBaseSize,
               height: _orbBaseSize,
               child: Stack(
+                clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
-                  // Layer 1: Outer Aura Glow (300px, breathing)
                   Transform.scale(
                     scale: breathScale,
                     child: Container(
@@ -698,7 +672,6 @@ class _LivingOrbState extends State<_LivingOrb>
                     ),
                   ),
 
-                  // Layer 2: Base Sphere (240px, true 3D radial gradient)
                   Container(
                     width: _orbBaseSize,
                     height: _orbBaseSize,
@@ -708,18 +681,17 @@ class _LivingOrbState extends State<_LivingOrb>
                         center: Alignment(-0.3, -0.4),
                         radius: 0.85,
                         colors: [
-                          Color(0xFFCCFBF1), // highlight (bright cyan-white)
-                          Color(0xFF5EEAD4), // mid-tone
-                          Color(0xFF14B8A6), // teal body
-                          Color(0xFF0D9488), // shadow side
-                          Color(0xFF0F766E), // deep shadow
+                          Color(0xFFCCFBF1),
+                          Color(0xFF5EEAD4),
+                          Color(0xFF14B8A6),
+                          Color(0xFF0D9488),
+                          Color(0xFF0F766E),
                         ],
                         stops: [0.0, 0.25, 0.5, 0.75, 1.0],
                       ),
                     ),
                   ),
 
-                  // Layer 3: Specular Highlight (rotated oval at top-left)
                   Positioned(
                     top: 45,
                     left: 55,
@@ -743,7 +715,6 @@ class _LivingOrbState extends State<_LivingOrb>
                     ),
                   ),
 
-                  // Layer 4: Inner Depth Ring (180px, hollow sphere feel)
                   Container(
                     width: 180,
                     height: 180,
@@ -760,7 +731,6 @@ class _LivingOrbState extends State<_LivingOrb>
                     ),
                   ),
 
-                  // Layer 5: Rotating Rim Light (240px, sweep gradient)
                   Transform.rotate(
                     angle: _rimRotateController.value * 2 * pi,
                     child: Container(
@@ -780,7 +750,6 @@ class _LivingOrbState extends State<_LivingOrb>
                     ),
                   ),
 
-                  // Layer 6: Caustic Reflection (bottom soft oval)
                   Positioned(
                     bottom: 40,
                     left: 90,
@@ -801,7 +770,6 @@ class _LivingOrbState extends State<_LivingOrb>
                     ),
                   ),
 
-                  // Layer 7: Ambient Particle Ring (6-8 dots orbiting)
                   ..._buildParticles(),
                 ],
               ),
@@ -823,7 +791,7 @@ class _LivingOrbState extends State<_LivingOrb>
       final angle = orbitAngle + phase;
       final x = orbitRadius * cos(angle);
       final y = orbitRadius * sin(angle);
-      final alpha = 0.3 + 0.3 * ((index % 3) / 2); // varying alpha 0.3-0.6
+      final alpha = 0.3 + 0.3 * ((index % 3) / 2);
 
       return Positioned(
         left: (_orbBaseSize / 2) + x - (particleSize / 2),
