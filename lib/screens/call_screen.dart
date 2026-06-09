@@ -217,6 +217,20 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
     switch (call.currentState) {
       case CallState.idle:
+        // Self-heal: permission is granted but the call never kicked off
+        // (e.g. the OS permission dialog recreated the activity and
+        // _initCall bailed out on `!mounted`). Without this the screen would
+        // sit on "Calling..." forever because idle renders the connecting UI.
+        if (_micPermissionGranted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final provider = context.read<CallProvider>();
+            if (provider.currentState == CallState.idle) {
+              provider.startCall();
+            }
+          });
+        }
+        return _buildConnecting(context, call);
       case CallState.connecting:
         return _buildConnecting(context, call);
       case CallState.active:

@@ -802,26 +802,31 @@ class _ChatScreenState extends State<ChatScreen>
                 ),
               ),
               const Gap(8),
-              AnimatedContainer(
-                width: _hasText ? 40 : 0,
-                height: 40,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                clipBehavior: Clip.antiAlias,
-                child: Container(
-                  width: 40,
+              // NOTE: A Container/AnimatedContainer with `clipBehavior` set but
+              // no `decoration` throws "Null check operator used on a null
+              // value" in release builds (the assert is only active in debug).
+              // Use a ClipRect to clip the width animation instead.
+              ClipRect(
+                child: AnimatedContainer(
+                  width: _hasText ? 40 : 0,
                   height: 40,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                      size: 20,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary,
                     ),
-                    onPressed: _hasText ? _sendTextMessage : null,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      onPressed: _hasText ? _sendTextMessage : null,
+                    ),
                   ),
                 ),
               ),

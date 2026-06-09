@@ -281,7 +281,7 @@ class _ManageSubscriptionScreenState extends State<ManageSubscriptionScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          if (_expiryDate case final expiry) ...[
+          if (_expiryDate case final expiry?) ...[
             Text(
               'Renews: ${_formatDate(expiry)}',
               style: TextStyle(
