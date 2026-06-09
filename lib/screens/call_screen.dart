@@ -32,8 +32,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   /// Drives the fade-in of the ended summary.
   late final AnimationController _summaryFadeController;
 
-  /// Whether microphone permission was granted.
   bool _micPermissionGranted = false;
+  bool _micPermissionChecked = false;
 
   String? _permissionError;
 
@@ -59,6 +59,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
     setState(() {
       _micPermissionGranted = granted;
+      _micPermissionChecked = true;
       if (!granted) {
         _permissionError = 'Microphone permission is required for voice calls.';
       }
@@ -196,8 +197,11 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     );
   }
 
-  /// Delegates to the correct sub-layout based on [CallProvider.currentState].
   Widget _buildBody(BuildContext context, CallProvider call) {
+    if (!_micPermissionChecked) {
+      return _buildConnecting(context, call);
+    }
+
     if (!_micPermissionGranted) {
       return _buildPermissionDenied();
     }
