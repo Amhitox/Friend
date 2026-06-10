@@ -37,6 +37,7 @@ class CallProvider extends ChangeNotifier {
   Duration _callDuration = Duration.zero;
   bool _isMuted = false;
   bool _isSpeakerOn = false;
+  bool _isCallScreenVisible = false;
   String? _error;
 
   Timer? _durationTimer;
@@ -57,6 +58,12 @@ class CallProvider extends ChangeNotifier {
 
   /// Whether speaker mode is on.
   bool get isSpeakerOn => _isSpeakerOn;
+
+  /// Whether the full-screen call route is currently visible.
+  bool get isCallScreenVisible => _isCallScreenVisible;
+
+  /// Whether a compact ongoing-call banner should be shown above the app.
+  bool get shouldShowCallBanner => isInCall && !_isCallScreenVisible;
 
   /// A human-readable formatted duration string (mm:ss or hh:mm:ss).
   String get formattedDuration {
@@ -83,6 +90,12 @@ class CallProvider extends ChangeNotifier {
   // ---------------------------------------------------------------------------
   // Call lifecycle
   // ---------------------------------------------------------------------------
+
+  void setCallScreenVisible(bool visible) {
+    if (_isCallScreenVisible == visible) return;
+    _isCallScreenVisible = visible;
+    notifyListeners();
+  }
 
   Future<void> startCall() {
     if (isInCall) return Future.value();
@@ -113,7 +126,7 @@ class CallProvider extends ChangeNotifier {
     // Persist call statistics.
     await _saveCallStats();
 
-    dev.log('Call ended. Duration: ${formattedDuration}');
+    dev.log('Call ended. Duration: $formattedDuration');
   }
 
   /// Resets the provider back to idle so a new call can be placed.

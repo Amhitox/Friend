@@ -55,6 +55,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
     _nameFocus.addListener(_onFocusChange);
     _startBlinkingLoop();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _skipIfReady());
+  }
+
+  Future<void> _skipIfReady() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (!userProvider.isInitialized) {
+      await userProvider.loadUser();
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+    if (!mounted) return;
+    if (userProvider.isInitialized || hasSeenOnboarding) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    }
   }
 
   void _onFocusChange() {
@@ -128,8 +143,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.dreamyBg,
+        decoration: BoxDecoration(
+          gradient: AppColors.dreamyBgFor(context),
         ),
         child: SafeArea(
           child: Stack(
@@ -160,13 +175,29 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return const Stack(
       children: [
         _FloatingParticle(
-            initialTop: 0.15, initialLeft: 0.20, size: 5, drift: 1.0),
+          initialTop: 0.15,
+          initialLeft: 0.20,
+          size: 5,
+          drift: 1.0,
+        ),
         _FloatingParticle(
-            initialTop: 0.45, initialLeft: 0.75, size: 4, drift: 0.8),
+          initialTop: 0.45,
+          initialLeft: 0.75,
+          size: 4,
+          drift: 0.8,
+        ),
         _FloatingParticle(
-            initialTop: 0.70, initialLeft: 0.30, size: 5, drift: 1.2),
+          initialTop: 0.70,
+          initialLeft: 0.30,
+          size: 5,
+          drift: 1.2,
+        ),
         _FloatingParticle(
-            initialTop: 0.85, initialLeft: 0.65, size: 4, drift: 0.9),
+          initialTop: 0.85,
+          initialLeft: 0.65,
+          size: 4,
+          drift: 0.9,
+        ),
       ],
     );
   }
@@ -189,7 +220,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontFamily: 'Cairo',
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
               height: 1.4,
             ),
             textAlign: TextAlign.center,
@@ -201,7 +232,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontFamily: 'Cairo',
               fontSize: 28,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryFor(context),
               height: 1.2,
             ),
             textAlign: TextAlign.center,
@@ -216,13 +247,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   fontFamily: 'Cairo',
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(context),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
               const Gap(6),
-              Icon(
+              const Icon(
                 Icons.favorite,
                 size: 14,
                 color: AppColors.primary,
@@ -234,7 +265,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   fontFamily: 'Cairo',
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(context),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -249,7 +280,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               Container(
                 width: 8,
                 height: 8,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primary,
                 ),
@@ -260,7 +291,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.textSecondary.withValues(alpha: 0.3),
+                  color: AppColors.textSecondaryFor(context)
+                      .withValues(alpha: 0.3),
                 ),
               ),
             ],
@@ -284,14 +316,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontFamily: 'Cairo',
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary.withValues(alpha: 0.7),
+              color: AppColors.textSecondaryFor(context).withValues(alpha: 0.7),
             ),
           ),
           const Gap(4),
           Icon(
             Icons.arrow_forward_rounded,
             size: 24,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: AppColors.textSecondaryFor(context).withValues(alpha: 0.5),
           ).animate(onPlay: (c) => c.repeat(reverse: true)).moveX(
                 begin: 0,
                 end: 6,
@@ -326,7 +358,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontFamily: 'Cairo',
               fontSize: 24,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryFor(context),
               height: 1.3,
             ),
             textAlign: TextAlign.center,
@@ -338,7 +370,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontFamily: 'Cairo',
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
               height: 1.4,
             ),
             textAlign: TextAlign.center,
@@ -354,7 +386,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontFamily: 'Cairo',
               fontSize: 12,
               fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary.withValues(alpha: 0.7),
+              color: AppColors.textSecondaryFor(context).withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -728,7 +760,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       curve: Curves.easeInOut,
       height: 52,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceFor(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: borderColor,
@@ -756,11 +788,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         textCapitalization: TextCapitalization.words,
         textInputAction: TextInputAction.done,
         onSubmitted: (_) => _completeOnboarding(),
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Cairo',
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimaryFor(context),
         ),
         decoration: InputDecoration(
           hintText: 'Alex, Sam, Your name...',
@@ -768,7 +800,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             fontFamily: 'Cairo',
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: AppColors.textSecondaryFor(context).withValues(alpha: 0.5),
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(

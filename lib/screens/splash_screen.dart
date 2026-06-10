@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 2200),
     )..repeat(reverse: true);
     _pulseScale = Tween<double>(begin: 0.98, end: 1.08).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     final results = await Future.wait<Object?>([
-      Future.delayed(const Duration(milliseconds: 1700)).then((_) => null),
+      Future.delayed(const Duration(milliseconds: 2800)).then((_) => null),
       SharedPreferences.getInstance(),
       userProvider.loadUser().then((_) => null),
     ]);
@@ -46,9 +46,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     final prefs = results[1] as SharedPreferences;
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
-    final destination = (hasSeenOnboarding && userProvider.isInitialized)
-        ? '/home'
-        : '/onboarding';
+    final hasSavedName = userProvider.isInitialized;
+    final destination =
+        (hasSavedName || hasSeenOnboarding) ? '/home' : '/onboarding';
 
     Navigator.of(context).pushReplacementNamed(destination);
   }

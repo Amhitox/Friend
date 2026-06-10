@@ -53,12 +53,22 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        context.read<CallProvider>().setCallScreenVisible(true);
         _initCall();
       }
     });
   }
 
   Future<void> _initCall() async {
+    final callProvider = context.read<CallProvider>();
+    if (callProvider.isInCall) {
+      setState(() {
+        _micPermissionGranted = true;
+        _micPermissionChecked = true;
+      });
+      return;
+    }
+
     final granted = await _requestMicPermission();
     if (!mounted) return;
 
@@ -77,9 +87,11 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
   void _startCallOnce() {
     if (_callStartRequested) return;
+    final callProvider = context.read<CallProvider>();
+    if (callProvider.isInCall) return;
     _callStartRequested = true;
     AnalyticsService().logCallStarted(callType: 'voice');
-    context.read<CallProvider>().startCall();
+    callProvider.startCall();
   }
 
   /// Requests microphone access via the `permission_handler` package.
@@ -91,13 +103,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _summaryFadeController.dispose();
-
-    final provider = context.read<CallProvider>();
-    if (provider.isInCall) {
-      _recordCallUsage(provider);
-      provider.endCall();
-    }
-
+    context.read<CallProvider>().setCallScreenVisible(false);
     super.dispose();
   }
 
@@ -166,13 +172,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
             Row(
               children: [
                 IconButton(
-                  onPressed: () {
-                    if (call.isInCall) {
-                      _recordCallUsage(call);
-                      call.endCall();
-                    }
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: () => Navigator.of(context).pop(),
                   icon: Icon(
                     Icons.arrow_back_ios,
                     color: AppColors.textPrimaryFor(context),
@@ -957,7 +957,7 @@ class _CircleIconLabelButton extends StatelessWidget {
                     ? Colors.black.withValues(alpha: 0.35)
                     : const Color(0x1A000000),
                 blurRadius: 8,
-                offset: Offset(0, 2),
+                offset: const Offset(0, 2),
               ),
             ],
           ),

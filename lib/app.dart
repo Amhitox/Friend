@@ -11,6 +11,7 @@ import 'screens/call_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/daily_screen.dart';
 import 'screens/main_shell.dart';
+import 'widgets/ongoing_call_banner.dart';
 
 class DostokApp extends StatefulWidget {
   const DostokApp({super.key});
@@ -20,6 +21,8 @@ class DostokApp extends StatefulWidget {
 }
 
 class _DostokAppState extends State<DostokApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   void initState() {
     super.initState();
@@ -234,6 +237,7 @@ class _DostokAppState extends State<DostokApp> {
     final themeProv = context.watch<ThemeProvider>();
 
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Dostok',
       debugShowCheckedModeBanner: false,
       locale: const Locale('en', 'US'),
@@ -247,7 +251,14 @@ class _DostokAppState extends State<DostokApp> {
         final theme = Theme.of(context);
         return Container(
           color: theme.scaffoldBackgroundColor,
-          child: child,
+          child: Stack(
+            children: [
+              if (child != null) child,
+              OngoingCallBanner(
+                onTap: () => _navigatorKey.currentState?.pushNamed('/call'),
+              ),
+            ],
+          ),
         );
       },
       themeMode: themeProv.themeMode,
