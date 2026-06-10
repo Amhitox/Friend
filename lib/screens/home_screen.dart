@@ -13,9 +13,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.background,
-      body: _HomeBody(),
+    return Scaffold(
+      backgroundColor: AppColors.backgroundFor(context),
+      body: const _HomeBody(),
     );
   }
 }
@@ -89,6 +89,11 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
     final userName =
         context.watch<UserProvider>().currentUser?.name ?? 'Friend';
     final chatProvider = context.watch<ChatProvider>();
+    final textPrimary = AppColors.textPrimaryFor(context);
+    final textSecondary = AppColors.textSecondaryFor(context);
+    final surface = AppColors.surfaceFor(context);
+    final primaryContainer = AppColors.primaryContainerFor(context);
+    final cardShadow = AppColors.cardShadowFor(context);
     final lastMessage =
         chatProvider.messages.isNotEmpty ? chatProvider.messages.last : null;
 
@@ -137,11 +142,11 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                         children: [
                           Text(
                             '${_greeting()}, $userName',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: textPrimary,
                               height: 1.3,
                               letterSpacing: -0.3,
                             ),
@@ -149,11 +154,11 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                           const SizedBox(height: 6),
                           Text(
                             _statusQuote(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Cairo',
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
-                              color: AppColors.textSecondary,
+                              color: textSecondary,
                               height: 1.4,
                             ),
                           ),
@@ -161,19 +166,17 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pushNamed(context, '/settings'),
-                      icon: const Icon(
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/settings'),
+                      icon: Icon(
                         Icons.settings_outlined,
                         size: 22,
-                        color: AppColors.textSecondary,
+                        color: textSecondary,
                       ),
                       splashRadius: 20,
                     ),
                   ],
-                )
-                    .animate()
-                    .fadeIn(delay: 100.ms, duration: 600.ms)
-                    .slideY(
+                ).animate().fadeIn(delay: 100.ms, duration: 600.ms).slideY(
                       begin: 0.15,
                       end: 0,
                       duration: 600.ms,
@@ -262,10 +265,7 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                )
-                    .animate()
-                    .fadeIn(delay: 250.ms, duration: 700.ms)
-                    .slideY(
+                ).animate().fadeIn(delay: 250.ms, duration: 700.ms).slideY(
                       begin: 0.15,
                       end: 0,
                       duration: 700.ms,
@@ -293,10 +293,7 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       ),
                     ),
                   ],
-                )
-                    .animate()
-                    .fadeIn(delay: 400.ms, duration: 600.ms)
-                    .slideY(
+                ).animate().fadeIn(delay: 400.ms, duration: 600.ms).slideY(
                       begin: 0.15,
                       end: 0,
                       duration: 600.ms,
@@ -312,9 +309,9 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: surface,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: AppColors.cardShadow,
+                      boxShadow: cardShadow,
                     ),
                     child: lastMessage != null
                         ? Row(
@@ -322,9 +319,9 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                               Container(
                                 width: 40,
                                 height: 40,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.primaryContainer,
+                                  color: primaryContainer,
                                 ),
                                 alignment: Alignment.center,
                                 child: const Text(
@@ -342,13 +339,13 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Dostok',
                                       style: TextStyle(
                                         fontFamily: 'Cairo',
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
+                                        color: textPrimary,
                                         height: 1.3,
                                       ),
                                     ),
@@ -357,11 +354,11 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                                       lastMessage.content,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'Cairo',
                                         fontSize: 14,
                                         fontWeight: FontWeight.w400,
-                                        color: AppColors.textSecondary,
+                                        color: textSecondary,
                                         height: 1.3,
                                       ),
                                     ),
@@ -371,19 +368,19 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                               const SizedBox(width: 8),
                               Text(
                                 _formatRelativeTime(lastMessage.timestamp),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Cairo',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.textSecondary,
+                                  color: textSecondary,
                                   height: 1.3,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(
+                              Icon(
                                 Icons.chevron_right,
                                 size: 16,
-                                color: AppColors.textSecondary,
+                                color: textSecondary,
                               ),
                             ],
                           )
@@ -392,9 +389,9 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                               Container(
                                 width: 40,
                                 height: 40,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.primaryContainer,
+                                  color: primaryContainer,
                                 ),
                                 alignment: Alignment.center,
                                 child: const Text(
@@ -408,14 +405,14 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'No messages yet. Say hi!',
                                   style: TextStyle(
                                     fontFamily: 'Cairo',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w400,
-                                    color: AppColors.textSecondary,
+                                    color: textSecondary,
                                     height: 1.3,
                                   ),
                                 ),
@@ -429,10 +426,7 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                             ],
                           ),
                   ),
-                )
-                    .animate()
-                    .fadeIn(delay: 550.ms, duration: 600.ms)
-                    .slideY(
+                ).animate().fadeIn(delay: 550.ms, duration: 600.ms).slideY(
                       begin: 0.15,
                       end: 0,
                       duration: 600.ms,
@@ -504,13 +498,14 @@ class _GlassCard extends StatelessWidget {
     return Container(
       height: 96,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
+        color: AppColors.surfaceFor(context)
+            .withValues(alpha: AppColors.isDark(context) ? 0.92 : 0.85),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.divider.withValues(alpha: 0.6),
+          color: AppColors.dividerFor(context).withValues(alpha: 0.6),
           width: 1,
         ),
-        boxShadow: AppColors.cardShadow,
+        boxShadow: AppColors.cardShadowFor(context),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -525,11 +520,11 @@ class _GlassCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(context),
                     height: 1.2,
                   ),
                 ),

@@ -52,9 +52,7 @@ class ProfileScreen extends StatelessWidget {
                       child: avatarPath != null
                           ? ClipOval(
                               child: Image.asset(avatarPath,
-                                  fit: BoxFit.cover,
-                                  width: 104,
-                                  height: 104),
+                                  fit: BoxFit.cover, width: 104, height: 104),
                             )
                           : Icon(Icons.person_rounded,
                               size: 52, color: theme.colorScheme.primary),
@@ -89,7 +87,7 @@ class ProfileScreen extends StatelessWidget {
                 Text(
                   'Sahbi f Dostok mn $daysActive nhar',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -146,7 +144,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     'Level dial relationship',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
+                      color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -184,7 +182,7 @@ class ProfileScreen extends StatelessWidget {
                 subtitle: Text(
                   themeProv.isDarkMode ? 'Maktoub (Dark)' : 'Nuur (Light)',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
                 secondary: AnimatedSwitcher(
@@ -231,7 +229,7 @@ class ProfileScreen extends StatelessWidget {
                 Text(
                   'Mazal m3raft ta haja 3lik',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
             ],
@@ -253,7 +251,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Text(
                   'Made with ❤️ f Maghrib',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
+                    color: theme.colorScheme.onSurfaceVariant,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -434,7 +432,7 @@ class _MiniStat extends StatelessWidget {
             Text(
               label,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: theme.colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -473,7 +471,7 @@ class _PersonalityRow extends StatelessWidget {
             children: [
               Text(trait,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   )),
               Text(value, style: theme.textTheme.bodyMedium),
@@ -501,10 +499,9 @@ class _InfoRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: Colors.grey[600])),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                )),
         Text(value,
             style: Theme.of(context)
                 .textTheme

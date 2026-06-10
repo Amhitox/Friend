@@ -20,8 +20,7 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen>
-    with TickerProviderStateMixin {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _inputFocusNode = FocusNode();
@@ -270,7 +269,7 @@ class _ChatScreenState extends State<ChatScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundFor(context),
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -278,7 +277,8 @@ class _ChatScreenState extends State<ChatScreen>
             child: Consumer<ChatProvider>(
               builder: (context, chatProvider, _) {
                 try {
-                  if (chatProvider.messageCount == 0 && _previousMessageCount > 0) {
+                  if (chatProvider.messageCount == 0 &&
+                      _previousMessageCount > 0) {
                     _previousMessageCount = 0;
                   }
                   if (chatProvider.messageCount > _previousMessageCount) {
@@ -296,7 +296,7 @@ class _ChatScreenState extends State<ChatScreen>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Cairo',
-                          color: AppColors.textSecondary,
+                          color: AppColors.textSecondaryFor(context),
                         ),
                       ),
                     ),
@@ -316,9 +316,9 @@ class _ChatScreenState extends State<ChatScreen>
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.arrow_back_ios,
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimaryFor(context),
           size: 20,
         ),
         onPressed: () => Navigator.of(context).pop(),
@@ -328,7 +328,7 @@ class _ChatScreenState extends State<ChatScreen>
         children: [
           CircleAvatar(
             radius: 14,
-            backgroundColor: AppColors.primaryContainer,
+            backgroundColor: AppColors.primaryContainerFor(context),
             child: const Text(
               'D',
               style: TextStyle(
@@ -340,13 +340,13 @@ class _ChatScreenState extends State<ChatScreen>
             ),
           ),
           const Gap(8),
-          const Text(
+          Text(
             'Dostok',
             style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryFor(context),
             ),
           ),
           const Gap(6),
@@ -363,9 +363,9 @@ class _ChatScreenState extends State<ChatScreen>
       centerTitle: true,
       actions: [
         IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.more_vert,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryFor(context),
           ),
           onPressed: _showOptionsMenu,
         ),
@@ -394,7 +394,7 @@ class _ChatScreenState extends State<ChatScreen>
             right: 16,
             bottom: 8,
             child: FloatingActionButton.small(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surfaceFor(context),
               foregroundColor: AppColors.primary,
               elevation: 3,
               onPressed: () => _scrollToBottom(),
@@ -423,12 +423,12 @@ class _ChatScreenState extends State<ChatScreen>
             ),
           ),
           const Gap(16),
-          const Text(
+          Text(
             'Loading conversation...',
             style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
             ),
           ),
         ],
@@ -526,16 +526,16 @@ class _ChatScreenState extends State<ChatScreen>
         margin: const EdgeInsets.symmetric(vertical: 16),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.primaryContainer,
+          color: AppColors.primaryContainerFor(context),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondaryFor(context),
           ),
         ),
       ),
@@ -590,23 +590,23 @@ class _ChatScreenState extends State<ChatScreen>
               ),
             ),
             const Gap(20),
-            const Text(
+            Text(
               "Hi! I'm Dostok",
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: AppColors.textPrimaryFor(context),
               ),
             ),
             const Gap(8),
-            const Text(
+            Text(
               'Type something or send a voice message',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 15,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(context),
               ),
             ),
             const Gap(32),
@@ -662,19 +662,19 @@ class _ChatScreenState extends State<ChatScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.cloud_off_rounded,
               size: 64,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
             ),
             const Gap(16),
             Text(
               chatProvider.error ?? 'Something went wrong.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 15,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(context),
               ),
             ),
             const Gap(24),
@@ -704,16 +704,18 @@ class _ChatScreenState extends State<ChatScreen>
   Widget _buildInputArea() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceFor(context),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.isDark(context)
+                ? Colors.black.withValues(alpha: 0.35)
+                : const Color(0x0A000000),
             blurRadius: 20,
-            offset: Offset(0, -4),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -728,9 +730,9 @@ class _ChatScreenState extends State<ChatScreen>
                 width: 40,
                 height: 40,
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(context),
                     size: 24,
                   ),
                   style: IconButton.styleFrom(
@@ -747,7 +749,7 @@ class _ChatScreenState extends State<ChatScreen>
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 120),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
+                    color: AppColors.primaryContainerFor(context),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: TextField(
@@ -786,9 +788,9 @@ class _ChatScreenState extends State<ChatScreen>
               Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryContainer,
+                  color: AppColors.primaryContainerFor(context),
                 ),
                 child: IconButton(
                   icon: const Icon(
@@ -851,7 +853,7 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     try {
       if (message.type == MessageType.system) {
-        return _buildSystemBubble();
+        return _buildSystemBubble(context);
       }
 
       if (message.type == MessageType.audio || message.audioPath != null) {
@@ -904,7 +906,7 @@ class _MessageBubble extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: AppColors.primaryContainerFor(context),
                       child: const Text(
                         'D',
                         style: TextStyle(
@@ -916,13 +918,13 @@ class _MessageBubble extends StatelessWidget {
                       ),
                     ),
                     const Gap(6),
-                    const Text(
+                    Text(
                       'Dostok',
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: AppColors.textSecondaryFor(context),
                       ),
                     ),
                   ],
@@ -932,7 +934,9 @@ class _MessageBubble extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: isUser ? AppColors.bubbleUser : Colors.white,
+                color: isUser
+                    ? AppColors.bubbleUser
+                    : AppColors.bubbleAiFor(context),
                 borderRadius: isUser
                     ? const BorderRadius.only(
                         topLeft: Radius.circular(20),
@@ -948,10 +952,12 @@ class _MessageBubble extends StatelessWidget {
                       ),
                 boxShadow: [
                   if (!isUser)
-                    const BoxShadow(
-                      color: Color(0x0D000000),
+                    BoxShadow(
+                      color: AppColors.isDark(context)
+                          ? Colors.black.withValues(alpha: 0.3)
+                          : const Color(0x0D000000),
                       blurRadius: 8,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                 ],
               ),
@@ -961,7 +967,8 @@ class _MessageBubble extends StatelessWidget {
                   fontFamily: 'Cairo',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: isUser ? Colors.white : AppColors.textPrimary,
+                  color:
+                      isUser ? Colors.white : AppColors.textPrimaryFor(context),
                 ),
               ),
             ),
@@ -979,7 +986,7 @@ class _MessageBubble extends StatelessWidget {
                   fontWeight: FontWeight.w400,
                   color: isUser
                       ? Colors.white.withValues(alpha: 0.7)
-                      : AppColors.textSecondary,
+                      : AppColors.textSecondaryFor(context),
                 ),
               ),
             ),
@@ -1022,7 +1029,7 @@ class _MessageBubble extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: AppColors.primaryContainerFor(context),
                       child: const Text(
                         'D',
                         style: TextStyle(
@@ -1034,13 +1041,13 @@ class _MessageBubble extends StatelessWidget {
                       ),
                     ),
                     const Gap(6),
-                    const Text(
+                    Text(
                       'Dostok',
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: AppColors.textSecondaryFor(context),
                       ),
                     ),
                   ],
@@ -1051,7 +1058,9 @@ class _MessageBubble extends StatelessWidget {
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: isUser ? AppColors.bubbleUser : Colors.white,
+                color: isUser
+                    ? AppColors.bubbleUser
+                    : AppColors.bubbleAiFor(context),
                 borderRadius: isUser
                     ? const BorderRadius.only(
                         topLeft: Radius.circular(20),
@@ -1067,10 +1076,12 @@ class _MessageBubble extends StatelessWidget {
                       ),
                 boxShadow: [
                   if (!isUser)
-                    const BoxShadow(
-                      color: Color(0x0D000000),
+                    BoxShadow(
+                      color: AppColors.isDark(context)
+                          ? Colors.black.withValues(alpha: 0.3)
+                          : const Color(0x0D000000),
                       blurRadius: 8,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                 ],
               ),
@@ -1084,7 +1095,7 @@ class _MessageBubble extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: isUser
                           ? Colors.white.withValues(alpha: 0.3)
-                          : AppColors.primaryContainer,
+                          : AppColors.primaryContainerFor(context),
                     ),
                     child: Icon(
                       Icons.play_arrow,
@@ -1101,7 +1112,9 @@ class _MessageBubble extends StatelessWidget {
                       fontFamily: 'Cairo',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isUser ? Colors.white : AppColors.textPrimary,
+                      color: isUser
+                          ? Colors.white
+                          : AppColors.textPrimaryFor(context),
                     ),
                   ),
                 ],
@@ -1121,7 +1134,7 @@ class _MessageBubble extends StatelessWidget {
                   fontWeight: FontWeight.w400,
                   color: isUser
                       ? Colors.white.withValues(alpha: 0.7)
-                      : AppColors.textSecondary,
+                      : AppColors.textSecondaryFor(context),
                 ),
               ),
             ),
@@ -1131,7 +1144,7 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildSystemBubble() {
+  Widget _buildSystemBubble(BuildContext context) {
     String content;
     try {
       content = message.content;
@@ -1144,11 +1157,11 @@ class _MessageBubble extends StatelessWidget {
         child: Text(
           content,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 12,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondaryFor(context),
           ),
         ),
       ),
@@ -1201,9 +1214,8 @@ class _VoiceWaveformState extends State<_VoiceWaveform>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.isUser
-        ? Colors.white.withValues(alpha: 0.8)
-        : AppColors.primary;
+    final color =
+        widget.isUser ? Colors.white.withValues(alpha: 0.8) : AppColors.primary;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -1242,8 +1254,7 @@ class _TypingIndicatorBubble extends StatefulWidget {
   const _TypingIndicatorBubble();
 
   @override
-  State<_TypingIndicatorBubble> createState() =>
-      _TypingIndicatorBubbleState();
+  State<_TypingIndicatorBubble> createState() => _TypingIndicatorBubbleState();
 }
 
 class _TypingIndicatorBubbleState extends State<_TypingIndicatorBubble>
@@ -1297,13 +1308,15 @@ class _TypingIndicatorBubbleState extends State<_TypingIndicatorBubble>
         margin: const EdgeInsets.only(left: 16, top: 4, bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.bubbleAiFor(context),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0D000000),
+              color: AppColors.isDark(context)
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : const Color(0x0D000000),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),

@@ -99,7 +99,8 @@ abstract final class AppRouter {
   ///
   /// - **Splash/Onboarding**: fade transition (no directional motion).
   /// - **Home**: fade + scale (launch feel).
-  /// - **Chat/Call**: slide from right (forward navigation feel).
+  /// - **Chat**: slide from right (forward navigation feel).
+  /// - **Call**: no transition, so the call UI is stable on entry.
   /// - **Profile/Settings**: slide from bottom (modal sheet feel).
   /// - **Paywall**: slide from bottom (modal sheet feel).
   /// - **Celebration**: fade (overlay feel).
@@ -124,7 +125,7 @@ abstract final class AppRouter {
         transition = _TransitionType.slideFromRight;
       case call:
         page = const CallScreen();
-        transition = _TransitionType.slideFromRight;
+        transition = _TransitionType.none;
       case profile:
         page = const ProfileScreen();
         transition = _TransitionType.slideFromBottom;
@@ -171,11 +172,17 @@ abstract final class AppRouter {
   }) {
     return PageRouteBuilder<T>(
       settings: settings,
-      transitionDuration: const Duration(milliseconds: 350),
-      reverseTransitionDuration: const Duration(milliseconds: 250),
+      transitionDuration: transition == _TransitionType.none
+          ? Duration.zero
+          : const Duration(milliseconds: 350),
+      reverseTransitionDuration: transition == _TransitionType.none
+          ? Duration.zero
+          : const Duration(milliseconds: 250),
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         switch (transition) {
+          case _TransitionType.none:
+            return child;
           case _TransitionType.fade:
             return _fadeTransition(animation, child);
           case _TransitionType.fadeScale:
@@ -318,6 +325,9 @@ abstract final class AppRouter {
 
 /// Available page transition styles.
 enum _TransitionType {
+  /// No animated transition.
+  none,
+
   /// Simple cross-fade.
   fade,
 

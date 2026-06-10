@@ -4,16 +4,8 @@ import '../theme/app_colors.dart';
 
 /// A custom bottom navigation bar for the Dostok app.
 ///
-/// Features a white container with rounded top corners, four standard
+/// Features a themed container with rounded top corners, four standard
 /// navigation items, and a floating circular center button.
-///
-/// Usage:
-/// ```dart
-/// DostokBottomNav(
-///   currentIndex: 0,
-///   onTap: (index) => setState(() => _currentIndex = index),
-/// )
-/// ```
 class DostokBottomNav extends StatelessWidget {
   /// The currently selected index (0-4).
   final int currentIndex;
@@ -36,11 +28,13 @@ class DostokBottomNav extends StatelessWidget {
         Container(
           height: 72,
           decoration: BoxDecoration(
-            color: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Colors.white,
+            color: AppColors.surfaceFor(context),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.15),
+                color: AppColors.isDark(context)
+                    ? Colors.black.withValues(alpha: 0.45)
+                    : AppColors.primary.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, -4),
                 spreadRadius: -4,
@@ -52,11 +46,11 @@ class DostokBottomNav extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildItem(Icons.home_outlined, 'Home', 0),
-                _buildItem(Icons.calendar_today_outlined, 'Daily', 1),
+                _buildItem(context, Icons.home_outlined, 'Home', 0),
+                _buildItem(context, Icons.calendar_today_outlined, 'Daily', 1),
                 const SizedBox(width: 56), // Space for center FAB
-                _buildItem(Icons.chat_bubble_outline, 'Chat', 3),
-                _buildItem(Icons.settings_outlined, 'Settings', 4),
+                _buildItem(context, Icons.chat_bubble_outline, 'Chat', 3),
+                _buildItem(context, Icons.settings_outlined, 'Settings', 4),
               ],
             ),
           ),
@@ -96,9 +90,11 @@ class DostokBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildItem(IconData icon, String label, int index) {
+  Widget _buildItem(
+      BuildContext context, IconData icon, String label, int index) {
     final isSelected = currentIndex == index;
-    final color = isSelected ? AppColors.primary : AppColors.textSecondary;
+    final color =
+        isSelected ? AppColors.primary : AppColors.textSecondaryFor(context);
 
     return InkWell(
       onTap: () => onTap(index),

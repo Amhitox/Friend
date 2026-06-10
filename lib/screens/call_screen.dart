@@ -134,8 +134,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
           extendBodyBehindAppBar: true,
           appBar: _buildAppBar(context, call),
           body: Container(
-            decoration: const BoxDecoration(
-              gradient: AppColors.dreamyBg,
+            decoration: BoxDecoration(
+              gradient: AppColors.dreamyBgFor(context),
             ),
             child: SafeArea(
               child: _buildBody(context, call),
@@ -173,29 +173,29 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                     }
                     Navigator.of(context).pop();
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(context),
                     size: 20,
                   ),
                   splashRadius: 24,
                 ),
                 const Spacer(),
-                const Text(
+                Text(
                   'Voice Chat',
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(context),
                   ),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: () {},
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_vert,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(context),
                     size: 24,
                   ),
                   splashRadius: 24,
@@ -214,7 +214,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     }
 
     if (!_micPermissionGranted) {
-      return _buildPermissionDenied();
+      return _buildPermissionDenied(context);
     }
 
     switch (call.currentState) {
@@ -233,7 +233,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   // Permission denied state
   // ---------------------------------------------------------------------------
 
-  Widget _buildPermissionDenied() {
+  Widget _buildPermissionDenied(BuildContext context) {
     return Container(
       color: Colors.transparent,
       child: Center(
@@ -242,19 +242,19 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.mic_off_rounded,
                 size: 64,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(context),
               ),
               const SizedBox(height: 24),
               Text(
                 _permissionError ?? 'Permission required.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 18,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryFor(context),
                 ),
               ),
               const SizedBox(height: 24),
@@ -268,7 +268,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -277,11 +278,11 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
+                child: Text(
                   'Go Back',
                   style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(context),
                   ),
                 ),
               ),
@@ -297,46 +298,39 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   // ---------------------------------------------------------------------------
 
   Widget _buildConnecting(BuildContext context, CallProvider call) {
-    return Container(
-      color: Colors.transparent,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(flex: 2),
-          const _LivingOrb(size: 260, isActive: false),
-          const SizedBox(height: 40),
-          const Text(
-            'Calling...',
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 18,
-              fontWeight: FontWeight.w300,
-              color: AppColors.textSecondary,
-              letterSpacing: 1.2,
-            ),
+    return _buildStableCallLayout(
+      context,
+      orb: const _LivingOrb(size: 260, isActive: false),
+      status: [
+        Text(
+          'Calling...',
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 18,
+            fontWeight: FontWeight.w300,
+            color: AppColors.textSecondaryFor(context),
+            letterSpacing: 1.2,
           ),
-          const Spacer(flex: 3),
-          _CircleControlButton(
-            icon: Icons.close,
-            size: 72,
-            iconColor: Colors.white,
-            backgroundColor: AppColors.error,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.error.withValues(alpha: 0.35),
-                blurRadius: 24,
-                spreadRadius: 4,
-                offset: const Offset(0, 6),
-              ),
-            ],
-            onPressed: () {
-              _recordCallUsage(call);
-              call.endCall();
-              Navigator.of(context).pop();
-            },
+        ),
+      ],
+      controls: _CircleControlButton(
+        icon: Icons.close,
+        size: 72,
+        iconColor: Colors.white,
+        backgroundColor: AppColors.error,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.error.withValues(alpha: 0.35),
+            blurRadius: 24,
+            spreadRadius: 4,
+            offset: const Offset(0, 6),
           ),
-          const SizedBox(height: 48),
         ],
+        onPressed: () {
+          _recordCallUsage(call);
+          call.endCall();
+          Navigator.of(context).pop();
+        },
       ),
     );
   }
@@ -346,61 +340,82 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   // ---------------------------------------------------------------------------
 
   Widget _buildActive(BuildContext context, CallProvider call) {
-    return Container(
-      color: Colors.transparent,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Spacer(flex: 2),
-            const _LivingOrb(size: 260, isActive: true),
-            const SizedBox(height: 40),
-            Text(
-              call.isMuted ? 'Muted' : 'On a call',
-              style: const TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 20,
-                fontWeight: FontWeight.w300,
-                color: AppColors.textPrimary,
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (!call.isMuted)
-              const _AnimatedDots(
-                baseText: 'Connected',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-            const SizedBox(height: 16),
-            _buildTranscriptionArea(call),
-            const SizedBox(height: 8),
-            Text(
-              call.formattedDuration,
-              style: const TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-                letterSpacing: 3,
-              ),
-            ),
-            const Spacer(flex: 3),
-            _buildBottomControls(context, call),
-            const SizedBox(height: 40),
-          ],
+    return _buildStableCallLayout(
+      context,
+      orb: const _LivingOrb(size: 260, isActive: true),
+      status: [
+        Text(
+          call.isMuted ? 'Muted' : 'On a call',
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 20,
+            fontWeight: FontWeight.w300,
+            color: AppColors.textPrimaryFor(context),
+            letterSpacing: 1.5,
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        if (!call.isMuted)
+          _AnimatedDots(
+            baseText: 'Connected',
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondaryFor(context),
+              letterSpacing: 1.0,
+            ),
+          ),
+        const SizedBox(height: 16),
+        _buildTranscriptionArea(context, call),
+        const SizedBox(height: 8),
+        Text(
+          call.formattedDuration,
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondaryFor(context),
+            letterSpacing: 3,
+          ),
+        ),
+      ],
+      controls: _buildBottomControls(context, call),
     );
   }
 
-  Widget _buildTranscriptionArea(CallProvider call) {
+  Widget _buildStableCallLayout(
+    BuildContext context, {
+    required Widget orb,
+    required List<Widget> status,
+    required Widget controls,
+  }) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 82),
+                Center(child: orb),
+                const SizedBox(height: 40),
+                ...status,
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 48,
+          child: Center(child: controls),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTranscriptionArea(BuildContext context, CallProvider call) {
     const String transcript = '';
     final bool hasText = transcript.isNotEmpty;
 
@@ -417,7 +432,9 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
           fontSize: 16,
           fontWeight: hasText ? FontWeight.w500 : FontWeight.w400,
           fontStyle: hasText ? FontStyle.normal : FontStyle.italic,
-          color: hasText ? AppColors.textPrimary : AppColors.textSecondary,
+          color: hasText
+              ? AppColors.textPrimaryFor(context)
+              : AppColors.textSecondaryFor(context),
         ),
       ),
     );
@@ -434,18 +451,19 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
               icon: call.isMuted ? Icons.mic_off : Icons.mic,
               size: 52,
               iconColor: call.isMuted ? AppColors.error : AppColors.primary,
-              backgroundColor: Colors.white,
-              boxShadow: AppColors.cardShadow,
+              backgroundColor: AppColors.surfaceFor(context),
+              boxShadow: AppColors.cardShadowFor(context),
               onPressed: () => call.toggleMute(),
             ),
             const SizedBox(width: 24),
             _CircleControlButton(
               icon: call.isSpeakerOn ? Icons.volume_up : Icons.volume_off,
               size: 52,
-              iconColor:
-                  call.isSpeakerOn ? AppColors.primary : AppColors.textSecondary,
-              backgroundColor: Colors.white,
-              boxShadow: AppColors.cardShadow,
+              iconColor: call.isSpeakerOn
+                  ? AppColors.primary
+                  : AppColors.textSecondaryFor(context),
+              backgroundColor: AppColors.surfaceFor(context),
+              boxShadow: AppColors.cardShadowFor(context),
               onPressed: () => call.toggleSpeaker(),
             ),
           ],
@@ -493,38 +511,39 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                 isActive: false,
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Call Ended',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryFor(context),
                 ),
               ),
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
+                  color: AppColors.primaryContainerFor(context),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFCCFBF1)),
+                  border: Border.all(color: AppColors.dividerFor(context)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.timer_outlined,
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(context),
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Duration: ${call.formattedDuration}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 16,
-                        color: AppColors.textPrimary,
+                        color: AppColors.textPrimaryFor(context),
                       ),
                     ),
                   ],
@@ -560,8 +579,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
                   _CircleIconLabelButton(
                     icon: Icons.arrow_back_rounded,
                     label: 'Back',
-                    backgroundColor: const Color(0xFFCCFBF1),
-                    iconColor: AppColors.textPrimary,
+                    backgroundColor: AppColors.primaryContainerFor(context),
+                    iconColor: AppColors.textPrimaryFor(context),
                     onPressed: () {
                       call.resetCall();
                       Navigator.of(context).pop();
@@ -595,8 +614,7 @@ class _LivingOrb extends StatefulWidget {
   State<_LivingOrb> createState() => _LivingOrbState();
 }
 
-class _LivingOrbState extends State<_LivingOrb>
-    with TickerProviderStateMixin {
+class _LivingOrbState extends State<_LivingOrb> with TickerProviderStateMixin {
   late final AnimationController _breathController;
   late final AnimationController _rimRotateController;
   late final AnimationController _particleOrbitController;
@@ -666,9 +684,8 @@ class _LivingOrbState extends State<_LivingOrb>
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primary.withValues(
-                              alpha: widget.isActive
-                                  ? 0.25 + 0.08 * breath
-                                  : 0.20,
+                              alpha:
+                                  widget.isActive ? 0.25 + 0.08 * breath : 0.20,
                             ),
                             blurRadius: 60,
                             spreadRadius: 8,
@@ -677,7 +694,6 @@ class _LivingOrbState extends State<_LivingOrb>
                       ),
                     ),
                   ),
-
                   Container(
                     width: _orbBaseSize,
                     height: _orbBaseSize,
@@ -697,7 +713,6 @@ class _LivingOrbState extends State<_LivingOrb>
                       ),
                     ),
                   ),
-
                   Positioned(
                     top: 45,
                     left: 55,
@@ -720,7 +735,6 @@ class _LivingOrbState extends State<_LivingOrb>
                       ),
                     ),
                   ),
-
                   Container(
                     width: 180,
                     height: 180,
@@ -736,7 +750,6 @@ class _LivingOrbState extends State<_LivingOrb>
                       ),
                     ),
                   ),
-
                   Transform.rotate(
                     angle: _rimRotateController.value * 2 * pi,
                     child: Container(
@@ -755,7 +768,6 @@ class _LivingOrbState extends State<_LivingOrb>
                       ),
                     ),
                   ),
-
                   Positioned(
                     bottom: 40,
                     left: 90,
@@ -775,7 +787,6 @@ class _LivingOrbState extends State<_LivingOrb>
                       ),
                     ),
                   ),
-
                   ..._buildParticles(),
                 ],
               ),
@@ -940,9 +951,11 @@ class _CircleIconLabelButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             shape: BoxShape.circle,
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color(0x1A000000),
+                color: AppColors.isDark(context)
+                    ? Colors.black.withValues(alpha: 0.35)
+                    : const Color(0x1A000000),
                 blurRadius: 8,
                 offset: Offset(0, 2),
               ),
@@ -967,10 +980,10 @@ class _CircleIconLabelButton extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 13,
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondaryFor(context),
           ),
         ),
       ],

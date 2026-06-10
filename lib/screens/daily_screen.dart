@@ -8,22 +8,25 @@ class DailyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryFor(context);
+    final textSecondary = AppColors.textSecondaryFor(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundFor(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Daily Check-in',
           style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: textPrimary,
           ),
         ),
         centerTitle: true,
@@ -37,13 +40,15 @@ class DailyScreen extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const RadialGradient(
+                gradient: RadialGradient(
                   colors: [
-                    Color(0xFFE8D5FF),
+                    AppColors.isDark(context)
+                        ? AppColors.primaryContainerDark
+                        : const Color(0xFFE8D5FF),
                     AppColors.primaryLight,
                     AppColors.primary,
                   ],
-                  stops: [0.0, 0.55, 1.0],
+                  stops: const [0.0, 0.55, 1.0],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -58,24 +63,23 @@ class DailyScreen extends StatelessWidget {
                 color: Colors.white,
                 size: 48,
               ),
-            )
-                .animate()
-                .fadeIn(duration: 600.ms)
-                .scale(begin: const Offset(0.85, 0.85), end: const Offset(1.0, 1.0), duration: 600.ms, curve: Curves.easeOut),
+            ).animate().fadeIn(duration: 600.ms).scale(
+                begin: const Offset(0.85, 0.85),
+                end: const Offset(1.0, 1.0),
+                duration: 600.ms,
+                curve: Curves.easeOut),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               'Your daily check-in is coming soon.',
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+                color: textSecondary,
                 height: 1.4,
               ),
-            )
-                .animate()
-                .fadeIn(delay: 200.ms, duration: 500.ms)
-                .slideY(begin: 0.1, end: 0, duration: 500.ms, curve: Curves.easeOut),
+            ).animate().fadeIn(delay: 200.ms, duration: 500.ms).slideY(
+                begin: 0.1, end: 0, duration: 500.ms, curve: Curves.easeOut),
           ],
         ),
       ),

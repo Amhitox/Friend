@@ -47,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: containerColor ?? AppColors.primaryContainer,
+        color: containerColor ?? AppColors.primaryContainerFor(context),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(
@@ -63,11 +63,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Cairo',
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary,
+          color: AppColors.textSecondaryFor(context),
           letterSpacing: 1,
         ),
       ),
@@ -95,20 +95,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryFor(context),
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(context),
                     ),
                   ),
                 ],
@@ -149,20 +149,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(context),
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(context),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -210,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             _buildIconContainer(
               icon,
-              containerColor: AppColors.errorLight,
+              containerColor: AppColors.errorContainerFor(context),
               iconColor: AppColors.error,
             ),
             const SizedBox(width: 16),
@@ -229,20 +229,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(context),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
               size: 20,
             ),
           ],
@@ -271,29 +271,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryFor(context),
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                      color: AppColors.textSecondaryFor(context),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
               size: 20,
             ),
           ],
@@ -320,20 +320,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.textPrimaryFor(context),
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryFor(context),
                   ),
                 ),
               ],
@@ -342,11 +342,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(width: 12),
           Text(
             trailing,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryFor(context),
             ),
           ),
         ],
@@ -360,37 +360,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceFor(context),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        title: const Text(
+        title: Text(
           'Clear all data?',
           style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryFor(context),
           ),
         ),
-        content: const Text(
+        content: Text(
           'This will erase all conversations, settings, and your profile. This cannot be undone.',
           style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 14,
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondaryFor(context),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(context),
               ),
             ),
           ),
@@ -445,27 +445,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final themeProv = context.watch<ThemeProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundFor(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryFor(context),
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
             fontFamily: 'Cairo',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryFor(context),
           ),
         ),
         centerTitle: true,
@@ -485,9 +485,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               await _prefs?.setBool('pushNotifications', v);
             },
           ),
-          const Divider(
+          Divider(
             height: 1,
-            color: Color(0xFFE8E5F3),
+            color: AppColors.dividerFor(context),
             indent: 56,
           ),
           _buildSwitchRow(
@@ -500,9 +500,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               await _prefs?.setBool('dailyReminder', v);
             },
           ),
-          const Divider(
+          Divider(
             height: 1,
-            color: Color(0xFFE8E5F3),
+            color: AppColors.dividerFor(context),
             indent: 56,
           ),
           _buildSwitchRow(
@@ -533,9 +533,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             trailingText: '${(_speed * 100).round()}%',
           ),
-          const Divider(
+          Divider(
             height: 1,
-            color: Color(0xFFE8E5F3),
+            color: AppColors.dividerFor(context),
             indent: 56,
           ),
           _buildSliderRow(
@@ -578,9 +578,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: 'Erase conversations, settings, and profile',
             onTap: _showClearDataDialog,
           ),
-          const Divider(
+          Divider(
             height: 1,
-            color: Color(0xFFE8E5F3),
+            color: AppColors.dividerFor(context),
             indent: 56,
           ),
           _buildNavigationRow(
@@ -604,14 +604,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 48),
 
           // ── Footer ──
-          const Center(
+          Center(
             child: Text(
               'Made with ❤️ in Morocco',
               style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondaryFor(context),
               ),
             ),
           ),
