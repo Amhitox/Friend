@@ -33,7 +33,12 @@ class _MainShellState extends State<MainShell> {
       return;
     }
 
-    if (navIndex == 2 || navIndex == 3) {
+    if (navIndex == 2) {
+      Navigator.of(context).pushNamed('/new-chat');
+      return;
+    }
+
+    if (navIndex == 3) {
       Navigator.of(context).pushNamed('/chat');
       return;
     }

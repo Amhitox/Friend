@@ -14,7 +14,9 @@ import '../theme/app_colors.dart';
 ///
 /// Clean, minimal, iOS-level chat UI with a soft lavender-white aesthetic.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final bool startNew;
+
+  const ChatScreen({super.key, this.startNew = false});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -27,16 +29,28 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   bool _hasText = false;
   bool _showScrollToBottom = false;
+  late bool _isStartingFreshChat;
   int _previousMessageCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _isStartingFreshChat = widget.startNew;
     _textController.addListener(_onTextChanged);
     _scrollController.addListener(_onScroll);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChatProvider>().loadMessages();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final chatProvider = context.read<ChatProvider>();
+
+      if (widget.startNew) {
+        await chatProvider.clearChat();
+        if (!mounted) return;
+        setState(() => _isStartingFreshChat = false);
+        _inputFocusNode.requestFocus();
+        return;
+      }
+
+      await chatProvider.loadMessages();
     });
   }
 
@@ -341,7 +355,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
           const Gap(8),
           Text(
-            'Dostok',
+            widget.startNew ? 'New chat' : 'Dostok',
             style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 16,
@@ -374,6 +388,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildChatBody(ChatProvider chatProvider) {
+    if (_isStartingFreshChat) {
+      return _buildEmptyState();
+    }
+
     if (chatProvider.isLoading && chatProvider.isEmpty) {
       return _buildLoadingState();
     }
@@ -628,12 +646,14 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
   Widget _buildSuggestionChip(String text) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         _textController.text = text;
         _sendTextMessage();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(20),
@@ -727,8 +747,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizedBox(
-                width: 40,
-                height: 40,
+                width: 48,
+                height: 48,
                 child: IconButton(
                   icon: Icon(
                     Icons.add,
@@ -786,8 +806,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ),
               const Gap(8),
               Container(
-                width: 40,
-                height: 40,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.primaryContainerFor(context),
@@ -806,13 +826,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               const Gap(8),
               ClipRect(
                 child: AnimatedContainer(
-                  width: _hasText ? 40 : 0,
-                  height: 40,
+                  width: _hasText ? 48 : 0,
+                  height: 48,
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
                   child: Container(
-                    width: 40,
-                    height: 40,
+                    width: 48,
+                    height: 48,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.primary,

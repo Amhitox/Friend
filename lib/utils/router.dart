@@ -46,6 +46,9 @@ abstract final class AppRouter {
   /// Chat conversation screen.
   static const String chat = '/chat';
 
+  /// Starts a fresh chat conversation from the center plus button.
+  static const String newChat = '/new-chat';
+
   /// Voice call screen.
   static const String call = '/call';
 
@@ -79,6 +82,7 @@ abstract final class AppRouter {
     onboarding: (_) => const OnboardingScreen(),
     home: (_) => const HomeScreen(),
     chat: (_) => const ChatScreen(),
+    newChat: (_) => const ChatScreen(startNew: true),
     call: (_) => const CallScreen(),
     profile: (_) => const ProfileScreen(),
     settings: (_) => const SettingsScreen(),
@@ -122,6 +126,9 @@ abstract final class AppRouter {
         transition = _TransitionType.fadeScale;
       case chat:
         page = const ChatScreen();
+        transition = _TransitionType.slideFromRight;
+      case newChat:
+        page = const ChatScreen(startNew: true);
         transition = _TransitionType.slideFromRight;
       case call:
         page = const CallScreen();

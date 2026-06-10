@@ -61,26 +61,33 @@ class DostokBottomNav extends StatelessWidget {
           right: 0,
           child: Center(
             child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => onTap(2),
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                      spreadRadius: 2,
+              child: SizedBox(
+                width: 72,
+                height: 72,
+                child: Center(
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 28,
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -91,28 +98,37 @@ class DostokBottomNav extends StatelessWidget {
   }
 
   Widget _buildItem(
-      BuildContext context, IconData icon, String label, int index) {
+    BuildContext context,
+    IconData icon,
+    String label,
+    int index,
+  ) {
     final isSelected = currentIndex == index;
     final color =
         isSelected ? AppColors.primary : AppColors.textSecondaryFor(context);
 
     return InkWell(
       onTap: () => onTap(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: color,
+      borderRadius: BorderRadius.circular(18),
+      child: SizedBox(
+        width: 64,
+        height: 58,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

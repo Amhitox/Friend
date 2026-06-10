@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
     _pulseScale = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
@@ -34,18 +34,18 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateAfterDelay() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-
-    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.loadUser();
+
+    final results = await Future.wait<Object?>([
+      Future.delayed(const Duration(milliseconds: 500)).then((_) => null),
+      SharedPreferences.getInstance(),
+      userProvider.loadUser().then((_) => null),
+    ]);
 
     if (!mounted) return;
 
+    final prefs = results[1] as SharedPreferences;
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     final destination = (hasSeenOnboarding && userProvider.isInitialized)
         ? '/home'
         : '/onboarding';
@@ -113,12 +113,12 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 )
                     .animate()
-                    .fadeIn(duration: 800.ms, curve: Curves.easeOut)
+                    .fadeIn(duration: 280.ms, curve: Curves.easeOut)
                     .scale(
                       begin: const Offset(0.4, 0.4),
                       end: const Offset(1.0, 1.0),
-                      duration: 900.ms,
-                      curve: Curves.elasticOut,
+                      duration: 360.ms,
+                      curve: Curves.easeOutBack,
                     ),
               ),
               const SizedBox(height: 32),
@@ -138,11 +138,11 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ],
                 ),
-              ).animate().fadeIn(delay: 400.ms, duration: 700.ms).slideY(
+              ).animate().fadeIn(delay: 120.ms, duration: 260.ms).slideY(
                     begin: 0.3,
                     end: 0.0,
-                    delay: 400.ms,
-                    duration: 700.ms,
+                    delay: 120.ms,
+                    duration: 260.ms,
                     curve: Curves.easeOutCubic,
                   ),
               const SizedBox(height: 10),
@@ -154,11 +154,11 @@ class _SplashScreenState extends State<SplashScreen>
                   fontWeight: FontWeight.w500,
                   color: textSecondary,
                 ),
-              ).animate().fadeIn(delay: 700.ms, duration: 600.ms).slideY(
+              ).animate().fadeIn(delay: 220.ms, duration: 240.ms).slideY(
                     begin: 0.4,
                     end: 0.0,
-                    delay: 700.ms,
-                    duration: 600.ms,
+                    delay: 220.ms,
+                    duration: 240.ms,
                     curve: Curves.easeOutCubic,
                   ),
               const Spacer(flex: 3),
@@ -179,14 +179,14 @@ class _SplashScreenState extends State<SplashScreen>
                             controller.repeat(reverse: true),
                       )
                       .fadeIn(
-                        delay: Duration(milliseconds: 1000 + i * 150),
-                        duration: 400.ms,
+                        delay: Duration(milliseconds: 260 + i * 80),
+                        duration: 180.ms,
                       )
                       .scale(
                         begin: const Offset(0.6, 0.6),
                         end: const Offset(1.2, 1.2),
-                        delay: Duration(milliseconds: 1100 + i * 150),
-                        duration: 600.ms,
+                        delay: Duration(milliseconds: 300 + i * 80),
+                        duration: 220.ms,
                         curve: Curves.easeInOut,
                       );
                 }),

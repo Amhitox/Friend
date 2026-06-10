@@ -39,8 +39,8 @@ class TopicChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        height: 36,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.primaryContainer,
           borderRadius: BorderRadius.circular(20),

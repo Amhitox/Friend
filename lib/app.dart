@@ -99,24 +99,50 @@ class _DostokAppState extends State<DostokApp> {
           color: textPrimary,
         ),
       ),
+      materialTapTargetSize: MaterialTapTargetSize.padded,
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          tapTargetSize: MaterialTapTargetSize.padded,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -246,6 +272,7 @@ class _DostokAppState extends State<DostokApp> {
         '/onboarding': (context) => const OnboardingScreen(),
         '/home': (context) => const MainShell(),
         '/chat': (context) => const ChatScreen(),
+        '/new-chat': (context) => const ChatScreen(startNew: true),
         '/settings': (context) => const SettingsScreen(),
         '/daily': (context) => const DailyScreen(),
       },
