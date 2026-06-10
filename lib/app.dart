@@ -182,12 +182,24 @@ class _DostokAppState extends State<DostokApp> {
         ),
       ),
       initialRoute: '/splash',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/call') {
+          return PageRouteBuilder<void>(
+            settings: settings,
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const CallScreen(),
+          );
+        }
+
+        return null;
+      },
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/home': (context) => const MainShell(),
         '/chat': (context) => const ChatScreen(),
-        '/call': (context) => const CallScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/daily': (context) => const DailyScreen(),
       },

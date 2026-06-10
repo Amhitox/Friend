@@ -50,7 +50,11 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
     );
 
-    _initCall();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initCall();
+      }
+    });
   }
 
   Future<void> _initCall() async {
