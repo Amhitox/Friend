@@ -34,6 +34,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
   bool _micPermissionGranted = false;
   bool _micPermissionChecked = false;
+  bool _callStartRequested = false;
 
   String? _permissionError;
 
@@ -70,9 +71,15 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     });
 
     if (granted) {
-      AnalyticsService().logCallStarted(callType: 'voice');
-      context.read<CallProvider>().startCall();
+      _startCallOnce();
     }
+  }
+
+  void _startCallOnce() {
+    if (_callStartRequested) return;
+    _callStartRequested = true;
+    AnalyticsService().logCallStarted(callType: 'voice');
+    context.read<CallProvider>().startCall();
   }
 
   /// Requests microphone access via the `permission_handler` package.
@@ -212,15 +219,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
 
     switch (call.currentState) {
       case CallState.idle:
-        if (_micPermissionGranted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            final provider = context.read<CallProvider>();
-            if (provider.currentState == CallState.idle) {
-              provider.startCall();
-            }
-          });
-        }
         return _buildConnecting(context, call);
       case CallState.connecting:
         return _buildConnecting(context, call);
