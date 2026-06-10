@@ -9,19 +9,23 @@ import '../providers/user_provider.dart';
 import '../theme/app_colors.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onDailyTap;
+
+  const HomeScreen({super.key, this.onDailyTap});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundFor(context),
-      body: const _HomeBody(),
+      body: _HomeBody(onDailyTap: onDailyTap),
     );
   }
 }
 
 class _HomeBody extends StatefulWidget {
-  const _HomeBody();
+  final VoidCallback? onDailyTap;
+
+  const _HomeBody({this.onDailyTap});
 
   @override
   State<_HomeBody> createState() => _HomeBodyState();
@@ -289,7 +293,14 @@ class _HomeBodyState extends State<_HomeBody> with TickerProviderStateMixin {
                       child: _GlassCard(
                         icon: Icons.wb_sunny_outlined,
                         label: 'Daily Check-in',
-                        onTap: () => Navigator.pushNamed(context, '/daily'),
+                        onTap: () {
+                          final onDailyTap = widget.onDailyTap;
+                          if (onDailyTap != null) {
+                            onDailyTap();
+                          } else {
+                            Navigator.pushNamed(context, '/daily');
+                          }
+                        },
                       ),
                     ),
                   ],

@@ -4,7 +4,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_colors.dart';
 
 class DailyScreen extends StatelessWidget {
-  const DailyScreen({super.key});
+  final bool showBackButton;
+
+  const DailyScreen({super.key, this.showBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +18,13 @@ class DailyScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: showBackButton,
+        leading: showBackButton
+            ? IconButton(
+                icon: Icon(Icons.arrow_back, color: textPrimary),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: Text(
           'Daily Check-in',
           style: TextStyle(
@@ -64,10 +69,11 @@ class DailyScreen extends StatelessWidget {
                 size: 48,
               ),
             ).animate().fadeIn(duration: 600.ms).scale(
-                begin: const Offset(0.85, 0.85),
-                end: const Offset(1.0, 1.0),
-                duration: 600.ms,
-                curve: Curves.easeOut),
+                  begin: const Offset(0.85, 0.85),
+                  end: const Offset(1.0, 1.0),
+                  duration: 600.ms,
+                  curve: Curves.easeOut,
+                ),
             const SizedBox(height: 32),
             Text(
               'Your daily check-in is coming soon.',
@@ -79,7 +85,11 @@ class DailyScreen extends StatelessWidget {
                 height: 1.4,
               ),
             ).animate().fadeIn(delay: 200.ms, duration: 500.ms).slideY(
-                begin: 0.1, end: 0, duration: 500.ms, curve: Curves.easeOut),
+                  begin: 0.1,
+                  end: 0,
+                  duration: 500.ms,
+                  curve: Curves.easeOut,
+                ),
           ],
         ),
       ),

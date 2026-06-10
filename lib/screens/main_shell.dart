@@ -22,9 +22,14 @@ class _MainShellState extends State<MainShell> {
     _currentIndex = widget.initialIndex == 1 ? 1 : 0;
   }
 
+  void _setTab(int index) {
+    if (_currentIndex == index) return;
+    setState(() => _currentIndex = index);
+  }
+
   void _onNavTap(int navIndex) {
     if (navIndex == 0 || navIndex == 1) {
-      setState(() => _currentIndex = navIndex);
+      _setTab(navIndex);
       return;
     }
 
@@ -40,17 +45,25 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          HomeScreen(),
-          DailyScreen(),
-        ],
-      ),
-      bottomNavigationBar: DostokBottomNav(
-        currentIndex: _currentIndex,
-        onTap: _onNavTap,
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _currentIndex != 0) {
+          _setTab(0);
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            HomeScreen(onDailyTap: () => _setTab(1)),
+            const DailyScreen(showBackButton: false),
+          ],
+        ),
+        bottomNavigationBar: DostokBottomNav(
+          currentIndex: _currentIndex,
+          onTap: _onNavTap,
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/user_provider.dart';
+import '../theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -37,14 +38,17 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     await userProvider.loadUser();
 
     if (!mounted) return;
 
-    final destination =
-        (hasSeenOnboarding && userProvider.isInitialized) ? '/home' : '/onboarding';
+    final destination = (hasSeenOnboarding && userProvider.isInitialized)
+        ? '/home'
+        : '/onboarding';
 
     Navigator.of(context).pushReplacementNamed(destination);
   }
@@ -57,28 +61,22 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final textPrimary = AppColors.textPrimaryFor(context);
+    final textSecondary = AppColors.textSecondaryFor(context);
+
     return Scaffold(
+      backgroundColor: AppColors.backgroundFor(context),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF5B4BD6),
-              Color(0xFF7C6BF5),
-              Color(0xFFB388FF),
-            ],
-            stops: [0.0, 0.5, 1.0],
-          ),
+        decoration: BoxDecoration(
+          gradient: AppColors.dreamyBgFor(context),
         ),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-
               AnimatedBuilder(
                 animation: _pulseScale,
                 builder: (context, child) {
@@ -92,32 +90,24 @@ class _SplashScreenState extends State<SplashScreen>
                   height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFCFC6FF),
-                        Color(0xFFCFC6FF),
-                        Color(0xFF7C6BF5),
-                      ],
-                    ),
+                    gradient: AppColors.orbGradient,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF5B4BD6).withOpacity(0.4),
+                        color: AppColors.primary.withValues(alpha: 0.28),
                         blurRadius: 30,
                         spreadRadius: 4,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'D',
                       style: TextStyle(
                         fontFamily: 'Cairo',
                         fontSize: 64,
                         fontWeight: FontWeight.w900,
-                        color: Colors.white,
+                        color: AppColors.textOnPrimary,
                       ),
                     ),
                   ),
@@ -131,59 +121,47 @@ class _SplashScreenState extends State<SplashScreen>
                       curve: Curves.elasticOut,
                     ),
               ),
-
               const SizedBox(height: 32),
-
               Text(
                 'Dostok',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 48,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: textPrimary,
                   letterSpacing: 2.0,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.10),
                       offset: const Offset(0, 3),
                       blurRadius: 8,
                     ),
                   ],
                 ),
-              )
-                  .animate()
-                  .fadeIn(delay: 400.ms, duration: 700.ms)
-                  .slideY(
+              ).animate().fadeIn(delay: 400.ms, duration: 700.ms).slideY(
                     begin: 0.3,
                     end: 0.0,
                     delay: 400.ms,
                     duration: 700.ms,
                     curve: Curves.easeOutCubic,
                   ),
-
               const SizedBox(height: 10),
-
               Text(
                 'Your AI companion, always here.',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.85),
+                  color: textSecondary,
                 ),
-              )
-                  .animate()
-                  .fadeIn(delay: 700.ms, duration: 600.ms)
-                  .slideY(
+              ).animate().fadeIn(delay: 700.ms, duration: 600.ms).slideY(
                     begin: 0.4,
                     end: 0.0,
                     delay: 700.ms,
                     duration: 600.ms,
                     curve: Curves.easeOutCubic,
                   ),
-
               const Spacer(flex: 3),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(3, (i) {
@@ -193,11 +171,12 @@ class _SplashScreenState extends State<SplashScreen>
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.6),
+                      color: AppColors.primary.withValues(alpha: 0.45),
                     ),
                   )
                       .animate(
-                        onComplete: (controller) => controller.repeat(reverse: true),
+                        onComplete: (controller) =>
+                            controller.repeat(reverse: true),
                       )
                       .fadeIn(
                         delay: Duration(milliseconds: 1000 + i * 150),
@@ -212,7 +191,6 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                 }),
               ),
-
               const SizedBox(height: 48),
             ],
           ),

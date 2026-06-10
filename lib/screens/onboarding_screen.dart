@@ -159,10 +159,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget _buildParticles() {
     return const Stack(
       children: [
-        _FloatingParticle(initialTop: 0.15, initialLeft: 0.20, size: 5, drift: 1.0),
-        _FloatingParticle(initialTop: 0.45, initialLeft: 0.75, size: 4, drift: 0.8),
-        _FloatingParticle(initialTop: 0.70, initialLeft: 0.30, size: 5, drift: 1.2),
-        _FloatingParticle(initialTop: 0.85, initialLeft: 0.65, size: 4, drift: 0.9),
+        _FloatingParticle(
+            initialTop: 0.15, initialLeft: 0.20, size: 5, drift: 1.0),
+        _FloatingParticle(
+            initialTop: 0.45, initialLeft: 0.75, size: 4, drift: 0.8),
+        _FloatingParticle(
+            initialTop: 0.70, initialLeft: 0.30, size: 5, drift: 1.2),
+        _FloatingParticle(
+            initialTop: 0.85, initialLeft: 0.65, size: 4, drift: 0.9),
       ],
     );
   }
@@ -260,9 +264,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
               ),
             ],
-          )
-              .animate()
-              .fadeIn(delay: 300.ms, duration: 600.ms),
+          ).animate().fadeIn(delay: 300.ms, duration: 600.ms),
           const Spacer(),
           _buildContinueCue(),
           const Gap(24),
@@ -287,17 +289,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
           const Gap(4),
           Icon(
-            Icons.keyboard_arrow_down_rounded,
+            Icons.arrow_forward_rounded,
             size: 24,
             color: AppColors.textSecondary.withValues(alpha: 0.5),
-          )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .moveY(begin: 0, end: 6, duration: 1.2.seconds, curve: Curves.easeInOut),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).moveX(
+                begin: 0,
+                end: 6,
+                duration: 1.2.seconds,
+                curve: Curves.easeInOut,
+              ),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(delay: 400.ms, duration: 700.ms);
+    ).animate().fadeIn(delay: 400.ms, duration: 700.ms);
   }
 
   // ─────────────────────────────────────────────
@@ -398,7 +401,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             // Left pupil
             Positioned(
               top: diameter * 0.38 + eyeOffsetY + eyeSize * 0.35,
-              left: diameter * 0.5 - eyeSpacing * 0.5 - eyeSize * 0.5 + eyeSize * 0.35,
+              left: diameter * 0.5 -
+                  eyeSpacing * 0.5 -
+                  eyeSize * 0.5 +
+                  eyeSize * 0.35,
               child: Container(
                 width: pupilSize,
                 height: pupilSize,
@@ -427,7 +433,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             // Right pupil
             Positioned(
               top: diameter * 0.38 + eyeOffsetY + eyeSize * 0.35,
-              left: diameter * 0.5 + eyeSpacing * 0.5 - eyeSize * 0.5 + eyeSize * 0.35,
+              left: diameter * 0.5 +
+                  eyeSpacing * 0.5 -
+                  eyeSize * 0.5 +
+                  eyeSize * 0.35,
               child: Container(
                 width: pupilSize,
                 height: pupilSize,
@@ -492,7 +501,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return AnimatedBuilder(
       animation: Listenable.merge([_orbController, _rotateController]),
       builder: (context, child) {
-        final breathe = 1.0 + 0.04 * math.sin(_orbController.value * 2 * math.pi);
+        final breathe =
+            1.0 + 0.04 * math.sin(_orbController.value * 2 * math.pi);
         return Transform.scale(
           scale: breathe,
           child: SizedBox(
@@ -593,7 +603,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Widget _buildSmallOrb(double keyboardInset) {
     final targetSize = keyboardInset > 0 ? 72.0 : 100.0;
-    final eyeOffsetY = _nameFieldFocused ? 3.0 : 0.0;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -603,7 +612,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       child: AnimatedBuilder(
         animation: Listenable.merge([_orbController, _rotateController]),
         builder: (context, child) {
-          final breathe = 1.0 + 0.03 * math.sin(_orbController.value * 2 * math.pi);
+          final breathe =
+              1.0 + 0.03 * math.sin(_orbController.value * 2 * math.pi);
           return Transform.scale(
             scale: breathe,
             child: Stack(
@@ -791,9 +801,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontWeight: FontWeight.w600,
               color: AppColors.error,
             ),
-          )
-              .animate(target: 1)
-              .shake(hz: 4, duration: 350.ms),
+          ).animate(target: 1).shake(hz: 4, duration: 350.ms),
         ],
       ],
     );
