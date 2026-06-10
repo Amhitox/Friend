@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build & Upload APK
+    name: Build & Upload Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -38,18 +38,8 @@ jobs:
       - name: Generate Hive adapters
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Build debug APK
-        run: flutter build apk --debug
-
       - name: Build release APK
         run: flutter build apk --release
-
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: dostok-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 30
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
@@ -68,6 +58,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download release APK
         uses: actions/download-artifact@v4
         with:
@@ -76,9 +69,14 @@ jobs:
 
       - name: Get version
         id: version
+        shell: bash
         run: |
-          VERSION=$(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(awk '/^version:/ {print $2; exit}' pubspec.yaml)
+          if [ -z "$VERSION" ]; then
+            echo "Could not read version from pubspec.yaml" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -97,3 +95,5 @@ jobs:
           files: ./apk/app-release.apk
           draft: false
           prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
