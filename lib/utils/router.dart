@@ -82,7 +82,7 @@ abstract final class AppRouter {
     onboarding: (_) => const OnboardingScreen(),
     home: (_) => const HomeScreen(),
     chat: (_) => const ChatScreen(),
-    newChat: (_) => const ChatScreen(startNew: true),
+    newChat: (_) => const ChatScreen(),
     call: (_) => const CallScreen(),
     profile: (_) => const ProfileScreen(),
     settings: (_) => const SettingsScreen(),
@@ -128,7 +128,7 @@ abstract final class AppRouter {
         page = const ChatScreen();
         transition = _TransitionType.slideFromRight;
       case newChat:
-        page = const ChatScreen(startNew: true);
+        page = const ChatScreen();
         transition = _TransitionType.slideFromRight;
       case call:
         page = const CallScreen();

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../providers/chat_provider.dart';
 import '../providers/daily_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/user_provider.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,6 +25,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   SharedPreferences? _prefs;
+  bool _pushNotifications = true;
+  bool _dailyReminder = true;
+  bool _soundEffects = true;
   double _speed = 0.5;
   double _pitch = 1.0;
 
@@ -33,16 +39,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadPreferences() async {
     _prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
+      _pushNotifications = _prefs?.getBool('pushNotifications') ?? true;
+      _dailyReminder = _prefs?.getBool('dailyReminder') ?? true;
+      _soundEffects = _prefs?.getBool('soundEffects') ?? true;
       _speed = (_prefs?.getDouble('ttsSpeed') ?? 0.5).clamp(0.3, 1.0);
       _pitch = (_prefs?.getDouble('ttsPitch') ?? 1.0).clamp(0.5, 2.0);
     });
   }
 
+  Future<void> _setBoolPreference(String key, bool value) async {
+    setState(() {
+      switch (key) {
+        case 'pushNotifications':
+          _pushNotifications = value;
+          break;
+        case 'dailyReminder':
+          _dailyReminder = value;
+          break;
+        case 'soundEffects':
+          _soundEffects = value;
+          break;
+      }
+    });
+    await _prefs?.setBool(key, value);
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontFamily: 'Cairo')),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final uri = Uri.parse('https://dostok.app/privacy');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return;
+    }
+    if (mounted) {
+      _showSnackBar('Privacy policy is not available right now.');
+    }
+  }
+
   // ── UI helpers ──
 
-  Widget _buildIconContainer(IconData icon,
-      {Color? containerColor, Color? iconColor}) {
+  Widget _buildIconContainer(
+    IconData icon, {
+    Color? containerColor,
+    Color? iconColor,
+  }) {
     return Container(
       width: 40,
       height: 40,
@@ -118,7 +170,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             CupertinoSwitch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppColors.primary,
+              activeTrackColor: AppColors.primary,
             ),
           ],
         ),
@@ -399,23 +451,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(ctx);
               final userProv = context.read<UserProvider>();
               final dailyProv = context.read<DailyProvider>();
+              final chatProv = context.read<ChatProvider>();
+              final themeProv = context.read<ThemeProvider>();
+              final notifications = context.read<NotificationService>();
               await userProv.clearProfile();
               await dailyProv.clearTasks();
               await dailyProv.clearMood();
-              await Hive.deleteBoxFromDisk('settings');
-              await Hive.deleteBoxFromDisk('conversations');
+              await chatProv.clearChat();
+              await notifications.cancelAll();
+              await Hive.box('settings').clear();
+              await Hive.box('conversations').clear();
               final sp = await SharedPreferences.getInstance();
               await sp.clear();
+              themeProv.setThemeMode(ThemeMode.dark);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'All data cleared',
-                      style: TextStyle(fontFamily: 'Cairo'),
-                    ),
-                    backgroundColor: AppColors.primary,
-                  ),
-                );
+                setState(() {
+                  _pushNotifications = true;
+                  _dailyReminder = true;
+                  _soundEffects = true;
+                  _speed = 0.5;
+                  _pitch = 1.0;
+                });
+                _showSnackBar('All data cleared');
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/onboarding', (_) => false);
               }
             },
             style: FilledButton.styleFrom(
@@ -479,10 +538,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.notifications_rounded,
             title: 'Push Notifications',
             subtitle: 'Receive push notifications from the app',
-            value: _prefs?.getBool('pushNotifications') ?? true,
+            value: _pushNotifications,
             onChanged: (v) async {
-              setState(() {});
-              await _prefs?.setBool('pushNotifications', v);
+              final notifications = context.read<NotificationService>();
+              await _setBoolPreference('pushNotifications', v);
+              if (!v) {
+                await notifications.cancelAll();
+              }
+              if (!mounted) return;
+              _showSnackBar(
+                v
+                    ? 'Push notifications enabled'
+                    : 'Push notifications disabled',
+              );
             },
           ),
           Divider(
@@ -494,10 +562,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.today_rounded,
             title: 'Daily Reminder',
             subtitle: 'Get a daily reminder to chat',
-            value: _prefs?.getBool('dailyReminder') ?? true,
+            value: _dailyReminder,
             onChanged: (v) async {
-              setState(() {});
-              await _prefs?.setBool('dailyReminder', v);
+              final notifications = context.read<NotificationService>();
+              await _setBoolPreference('dailyReminder', v);
+              if (v && _pushNotifications) {
+                await notifications.scheduleDailyCheckIn();
+              } else {
+                await notifications.cancelAll();
+              }
+              if (!mounted) return;
+              _showSnackBar(
+                v ? 'Daily reminder enabled' : 'Daily reminder disabled',
+              );
             },
           ),
           Divider(
@@ -509,10 +586,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.volume_up_rounded,
             title: 'Sound Effects',
             subtitle: 'Play sounds for messages and actions',
-            value: _prefs?.getBool('soundEffects') ?? true,
+            value: _soundEffects,
             onChanged: (v) async {
-              setState(() {});
-              await _prefs?.setBool('soundEffects', v);
+              await _setBoolPreference('soundEffects', v);
+              if (!mounted) return;
+              _showSnackBar(
+                v ? 'Sound effects enabled' : 'Sound effects disabled',
+              );
             },
           ),
 
@@ -587,7 +667,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.policy_rounded,
             title: 'Privacy Policy',
             subtitle: 'Read our privacy policy',
-            onTap: () {},
+            onTap: _openPrivacyPolicy,
           ),
 
           const SizedBox(height: 32),

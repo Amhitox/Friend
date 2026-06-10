@@ -35,22 +35,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _isStartingFreshChat = widget.startNew;
+    _isStartingFreshChat = false;
     _textController.addListener(_onTextChanged);
     _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final chatProvider = context.read<ChatProvider>();
-
-      if (widget.startNew) {
-        await chatProvider.clearChat();
-        if (!mounted) return;
-        setState(() => _isStartingFreshChat = false);
-        _inputFocusNode.requestFocus();
-        return;
-      }
-
-      await chatProvider.loadMessages();
+      await context.read<ChatProvider>().loadMessages();
     });
   }
 
@@ -355,7 +345,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
           const Gap(8),
           Text(
-            widget.startNew ? 'New chat' : 'Dostok',
+            'Dostok',
             style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 16,
@@ -503,7 +493,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ],
           );
         } catch (e) {
-          debugPrint("Message render error: $e");
+          debugPrint('Message render error: $e');
           if (kDebugMode) {
             return Container(
               padding: const EdgeInsets.all(8),
@@ -575,7 +565,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: AppColors.orbRadial,
               ),

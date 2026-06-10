@@ -272,7 +272,7 @@ class _DostokAppState extends State<DostokApp> {
         '/onboarding': (context) => const OnboardingScreen(),
         '/home': (context) => const MainShell(),
         '/chat': (context) => const ChatScreen(),
-        '/new-chat': (context) => const ChatScreen(startNew: true),
+        '/new-chat': (context) => const ChatScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/daily': (context) => const DailyScreen(),
       },

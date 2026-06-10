@@ -11,7 +11,7 @@ class ThemeProvider extends ChangeNotifier {
   static const String _boxName = 'settings';
   static const String _themeModeKey = 'themeMode';
 
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.dark;
 
   // ---------------------------------------------------------------------------
   // Getters
@@ -32,7 +32,7 @@ class ThemeProvider extends ChangeNotifier {
 
   /// Loads the persisted theme preference from Hive.
   ///
-  /// Falls back to [ThemeMode.light] if no preference is stored.
+  /// Falls back to [ThemeMode.dark] if no preference is stored.
   Future<void> loadTheme() async {
     try {
       if (!Hive.isBoxOpen(_boxName)) return;
@@ -42,12 +42,12 @@ class ThemeProvider extends ChangeNotifier {
       if (stored != null) {
         _themeMode = ThemeMode.values.firstWhere(
           (m) => m.name == stored,
-          orElse: () => ThemeMode.light,
+          orElse: () => ThemeMode.dark,
         );
       }
     } catch (e, st) {
       dev.log('ThemeProvider.loadTheme failed', error: e, stackTrace: st);
-      _themeMode = ThemeMode.light;
+      _themeMode = ThemeMode.dark;
     }
     notifyListeners();
   }

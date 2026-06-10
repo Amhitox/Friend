@@ -24,9 +24,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1600),
     )..repeat(reverse: true);
-    _pulseScale = Tween<double>(begin: 1.0, end: 1.06).animate(
+    _pulseScale = Tween<double>(begin: 0.98, end: 1.08).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     final results = await Future.wait<Object?>([
-      Future.delayed(const Duration(milliseconds: 500)).then((_) => null),
+      Future.delayed(const Duration(milliseconds: 1700)).then((_) => null),
       SharedPreferences.getInstance(),
       userProvider.loadUser().then((_) => null),
     ]);
